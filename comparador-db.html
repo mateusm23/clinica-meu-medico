@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Médico - Comparador de Listas (Pro V4)</title>
+
+    <!-- SheetJS Library (Para leitura) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- ExcelJS Library (Para escrita com formatação) -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #26a69a 0%, #00796b 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #26a69a;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #e0f2f1;
+        }
+
+        .upload-box:hover {
+            border-color: #00796b;
+            background: #b2dfdb;
+        }
+
+        .upload-box.has-file {
+            border-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .upload-box h3 {
+            color: #00796b;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #26a69a 0%, #00796b 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(38, 166, 154, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        .btn-copy {
+            padding: 10px 25px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #26a69a;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: 600;
+        }
+
+        .file-input-label:hover {
+            background: #00796b;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            min-height: 20px;
+        }
+
+        .file-name.success {
+            color: #f57c00;
+            font-weight: 600;
+        }
+
+        .status {
+            margin: 30px 0;
+            padding: 20px;
+            background: #e0f2f1;
+            border-radius: 10px;
+            border-left: 4px solid #26a69a;
+        }
+
+        .status h3 {
+            color: #00796b;
+            margin-bottom: 10px;
+        }
+
+        .status-item {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .status-item.processing {
+            border-left: 4px solid #ff9800;
+            background: #fff8e1;
+            color: #f57c00;
+        }
+
+        .status-item.done {
+            border-left: 4px solid #4caf50;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-item.error {
+            border-left: 4px solid #f44336;
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-item.warning {
+            border-left: 4px solid #ff5722;
+            background: #fbe9e7;
+            color: #d84315;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            display: none;
+        }
+
+        .processing .spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ====== PAINEL DE ANÁLISE INTERATIVA ====== */
+
+        #analysisPanel {
+            display: none;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 3px solid #e0e0e0;
+        }
+
+        .analysis-title {
+            text-align: center;
+            color: #00796b;
+            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        /* Seção 1: Pesquisa */
+        .search-section {
+            background: #e0f2f1;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-section h3 {
+            color: #00796b;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #26a69a;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #00796b;
+            box-shadow: 0 0 10px rgba(38, 166, 154, 0.3);
+        }
+
+        .search-suggestions {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Seção 2: Resumo */
+        .summary-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-section h3 {
+            color: #00796b;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #26a69a;
+            padding-bottom: 10px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .summary-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00796b;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .stat-item.success { border-left: 4px solid #4caf50; }
+        .stat-item.warning { border-left: 4px solid #ff9800; }
+        .stat-item.error { border-left: 4px solid #f44336; }
+
+        /* Seção 3: Comparação Sintética */
+        .comparison-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .comparison-section h3 {
+            color: #00796b;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #26a69a;
+            padding-bottom: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #26a69a;
+            padding-bottom: 10px;
+        }
+
+        .section-title {
+            color: #00796b;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .btn-copy-table {
+            padding: 8px 20px;
+            font-size: 13px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-copy-table:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .comparison-column {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comparison-column h4 {
+            color: #00796b;
+            margin-bottom: 15px;
+            font-size: 16px;
+            position: sticky;
+            top: 0;
+            background: #f9f9f9;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .exam-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .exam-item.matched {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .exam-item.unmatched {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .exam-item::before {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .exam-item.matched::before {
+            content: '✓';
+        }
+
+        .exam-item.unmatched::before {
+            content: '✗';
+        }
+
+        /* Seções 4 e 5: Tabelas Originais */
+        .original-data-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .original-data-section h3 {
+            color: #00796b;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #26a69a;
+            padding-bottom: 10px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            background: #00796b;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+            border: 1px solid #004d40;
+        }
+
+        .data-table td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .data-table tbody tr:hover {
+            background: #e0f2f1;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Meu Médico - Comparador de Listas</h1>
+            <p>Processamento de dados: Clínica nas Nuvens + Laboratório Parceiro</p>
+            <div class="badge">V4 - Análise Interativa de Pacientes</div>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <div class="upload-box" id="uploadBox1">
+                    <h3>📋 Planilha Clínica nas Nuvens</h3>
+                    <label class="file-input-label">
+                        Selecionar Arquivo
+                        <input type="file" id="fileClinica" accept=".xlsx,.xls">
+                    </label>
+                    <div class="file-name" id="fileNameClinica">Nenhum arquivo selecionado</div>
+                </div>
+
+                <div class="upload-box" id="uploadBox2">
+                    <h3>🔬 Planilha Laboratório</h3>
+                    <label class="file-input-label">
+                        Selecionar Arquivo
+                        <input type="file" id="fileLab" accept=".xlsx,.xls">
+                    </label>
+                    <div class="file-name" id="fileNameLab">Nenhum arquivo selecionado</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn btn-primary" id="btnProcess" disabled>Processar ETL Completo</button>
+                <button class="btn btn-success" id="btnDownload" style="display: none;">Baixar Planilha</button>
+            </div>
+
+            <div class="status" id="statusContainer" style="display: none;">
+                <h3>Log de Processamento:</h3>
+                <div id="statusList"></div>
+            </div>
+
+            <!-- PAINEL DE ANÁLISE INTERATIVA -->
+            <div id="analysisPanel">
+                <h2 class="analysis-title">🔍 Análise Interativa de Pacientes</h2>
+
+                <!-- Seção 1: Pesquisa -->
+                <div class="search-section">
+                    <h3>1️⃣ PESQUISA</h3>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Digite o nome do paciente..." autocomplete="off">
+                    <div class="search-suggestions" id="searchSuggestions">Digite para buscar pacientes</div>
+                </div>
+
+                <!-- Seção 2: Resumo -->
+                <div class="summary-section" id="summarySection">
+                    <h3>2️⃣ RESUMO DESCRITO</h3>
+                    <div id="summaryContent">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <p>Digite um nome no campo acima para ver o resumo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 3: Comparação Sintética -->
+                <div class="comparison-section" id="comparisonSection" style="display: none;">
+                    <div class="section-header">
+                        <h3 class="section-title">3️⃣ COMPARAÇÃO SINTÉTICA</h3>
+                        <button class="btn-copy-table" onclick="copyComparison()">📋 Copiar Tabela</button>
+                    </div>
+                    <div class="comparison-grid">
+                        <div class="comparison-column">
+                            <h4>📋 CLÍNICA (<span id="clinicaCount">0</span> exames)</h4>
+                            <div id="clinicaList"></div>
+                        </div>
+                        <div class="comparison-column">
+                            <h4>🔬 LABORATÓRIO (<span id="labCount">0</span> exames)</h4>
+                            <div id="labList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 4: Base Original - Clínica -->
+                <div class="original-data-section" id="clinicaOriginalSection" style="display: none;">
+                    <div class="section-header">
+                        <h3 class="section-title">4️⃣ BASE ORIGINAL - CLÍNICA (<span id="clinicaOriginalCount">0</span> registros)</h3>
+                        <button class="btn-copy-table" onclick="copyClinicaTable()">📋 Copiar Tabela</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="clinicaOriginalTable">
+                            <thead id="clinicaOriginalHead"></thead>
+                            <tbody id="clinicaOriginalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Seção 5: Base Original - Laboratório -->
+                <div class="original-data-section" id="labOriginalSection" style="display: none;">
+                    <div class="section-header">
+                        <h3 class="section-title">5️⃣ BASE ORIGINAL - LABORATÓRIO (<span id="labOriginalCount">0</span> registros)</h3>
+                        <button class="btn-copy-table" onclick="copyLabTable()">📋 Copiar Tabela</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="labOriginalTable">
+                            <thead id="labOriginalHead"></thead>
+                            <tbody id="labOriginalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clinicaData = null;
+        let labData = null;
+        let clinicaProcessed = null;
+        let clinicaExpanded = null;
+        let labProcessed = null;
+        let comparisonData = null;
+        let patientsToVerifyCount = 0;
+
+        const fileClinica = document.getElementById('fileClinica');
+        const fileLab = document.getElementById('fileLab');
+        const btnProcess = document.getElementById('btnProcess');
+        const btnDownload = document.getElementById('btnDownload');
+        const statusContainer = document.getElementById('statusContainer');
+        const statusList = document.getElementById('statusList');
+        const searchInput = document.getElementById('searchInput');
+
+        fileClinica.addEventListener('change', handleClinicaUpload);
+        fileLab.addEventListener('change', handleLabUpload);
+        btnProcess.addEventListener('click', processETL);
+        btnDownload.addEventListener('click', downloadResult);
+        searchInput.addEventListener('input', handleSearch);
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function handleClinicaUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                document.getElementById('fileNameClinica').textContent = "Carregando...";
+                clinicaData = await readExcelFile(file, 2);
+                document.getElementById('fileNameClinica').textContent = `${file.name} - ${clinicaData.length} registros`;
+                document.getElementById('fileNameClinica').classList.add('success');
+                document.getElementById('uploadBox1').classList.add('has-file');
+                checkReady();
+            } catch (error) {
+                alert('Erro ao ler arquivo da Clínica: ' + error.message);
+            }
+        }
+
+        async function handleLabUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                document.getElementById('fileNameLab').textContent = "Carregando...";
+                labData = await readExcelFile(file, 3);
+                document.getElementById('fileNameLab').textContent = `${file.name} - ${labData.length} registros`;
+                document.getElementById('fileNameLab').classList.add('success');
+                document.getElementById('uploadBox2').classList.add('has-file');
+                checkReady();
+            } catch (error) {
+                alert('Erro ao ler arquivo do Laboratório: ' + error.message);
+            }
+        }
+
+        function checkReady() {
+            if (clinicaData && labData) {
+                btnProcess.disabled = false;
+            }
+        }
+
+        async function readExcelFile(file, skipRows) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+
+                        const allRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: true });
+
+                        if (allRows.length < skipRows + 1) {
+                            reject(new Error(`Planilha precisa ter pelo menos ${skipRows + 1} linhas`));
+                            return;
+                        }
+
+                        const rowsWithoutSkipped = allRows.slice(skipRows);
+                        const headers = rowsWithoutSkipped[0];
+                        const dataRows = rowsWithoutSkipped.slice(1);
+
+                        const headerCounts = {};
+                        const deduplicatedHeaders = headers.map(header => {
+                            const headerStr = String(header || '').trim();
+                            if (!headerCounts[headerStr]) headerCounts[headerStr] = 0;
+                            headerCounts[headerStr]++;
+                            return headerCounts[headerStr] === 1 ? headerStr : `${headerStr} ${headerCounts[headerStr]}`;
+                        });
+
+                        const result = dataRows.map(row => {
+                            const obj = {};
+                            deduplicatedHeaders.forEach((header, index) => {
+                                const headerName = header || `Column_${index}`;
+                                obj[headerName] = row[index] || '';
+                            });
+                            obj._headers = deduplicatedHeaders;
+                            return obj;
+                        });
+
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function processETL() {
+            try {
+                statusContainer.style.display = 'block';
+                statusList.innerHTML = '';
+                btnProcess.disabled = true;
+
+                let statusEl = addStatus('Iniciando Motor ETL...', 'processing');
+                await wait(1500);
+                updateStatus(statusEl, 'Motor ETL Inicializado.', 'done');
+
+                statusEl = addStatus('Filtrando Clínica (Apenas Faturados)...', 'processing');
+                await wait(2000);
+
+                const columnHeaders = clinicaData[0]._headers;
+                const situacaoColumns = columnHeaders.filter(col => String(col).toLowerCase().includes('situação') || String(col).toLowerCase().includes('situacao'));
+                let situacaoColumn = situacaoColumns.length > 0 ? situacaoColumns[0] : null;
+
+                if (situacaoColumns.length > 0) {
+                     for (const col of situacaoColumns) {
+                        const values = getUniqueValues(clinicaData, col);
+                        if (values.includes('Faturado')) {
+                            situacaoColumn = col;
+                            break;
+                        }
+                    }
+                }
+
+                clinicaProcessed = clinicaData.filter(row => {
+                    const value = String(row[situacaoColumn] || '').trim();
+                    return value === 'Faturado';
+                });
+
+                updateStatus(statusEl, `✓ Filtro Aplicado: ${clinicaProcessed.length} registros faturados.`, 'done');
+
+                statusEl = addStatus('Normalizando e Expandindo Procedimentos...', 'processing');
+                await wait(2000);
+
+                const procedimentosColumns = columnHeaders.filter(col => String(col).toLowerCase().includes('procedimento'));
+                let procedimentosColumn = procedimentosColumns.length > 0 ? procedimentosColumns[0] : null;
+
+                if (procedimentosColumns.length > 0) {
+                     for (const col of procedimentosColumns) {
+                        const sampleValue = clinicaProcessed[0] ? String(clinicaProcessed[0][col] || '') : '';
+                        if (sampleValue.match(/\(\d+\)\s*\([^)]+\):/)) {
+                            procedimentosColumn = col;
+                            break;
+                        }
+                    }
+                }
+
+                clinicaExpanded = [];
+                clinicaProcessed.forEach(row => {
+                    const procedimentosText = String(row[procedimentosColumn] || '');
+                    const procedimentos = splitProcedimentos(procedimentosText);
+                    procedimentos.forEach(proc => {
+                        const parsed = parseProcedimento(proc);
+                        if (parsed) {
+                            const expandedRow = { ...row };
+                            expandedRow['Procedimento'] = parsed.procedimento;
+                            expandedRow['Código - DB'] = parsed.codigo;
+                            expandedRow['Legenda'] = parsed.legenda;
+                            clinicaExpanded.push(expandedRow);
+                        }
+                    });
+                });
+
+                updateStatus(statusEl, `✓ Normalização: ${clinicaExpanded.length} linhas geradas.`, 'done');
+
+                statusEl = addStatus('Cruzando dados (Clínica x Laboratório)...', 'processing');
+                await wait(2000);
+
+                labProcessed = labData;
+                const comparisonResult = compareClinicaLab();
+
+                updateStatus(statusEl, `✓ Cruzamento Finalizado.`, 'done');
+
+                addStatus(`• Registrados em ambos: ${comparisonResult.ambos}`, 'done');
+                addStatus(`• Apenas na Clínica: ${comparisonResult.somenteClinica}`, 'done');
+                addStatus(`• Apenas no Laboratório: ${comparisonResult.somenteLab}`, 'done');
+
+                await wait(1000);
+                if (patientsToVerifyCount > 0) {
+                    addStatus(`⚠️ ATENÇÃO: ${patientsToVerifyCount} PACIENTES POSSUEM DIVERGÊNCIAS.`, 'warning');
+                } else {
+                    addStatus(`✓ SUCESSO TOTAL: Nenhuma divergência encontrada.`, 'done');
+                }
+
+                btnDownload.style.display = 'inline-block';
+                btnDownload.innerText = 'Baixar Resultado Premium (5 Abas)';
+
+                // Mostrar painel de análise
+                document.getElementById('analysisPanel').style.display = 'block';
+
+                // Scroll suave até o painel
+                setTimeout(() => {
+                    document.getElementById('analysisPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 500);
+
+            } catch (error) {
+                console.error(error);
+                alert('Erro no processamento: ' + error.message);
+                addStatus('✗ Erro Crítico: ' + error.message, 'error');
+            }
+        }
+
+        function splitProcedimentos(text) {
+            if (!text || text.trim() === '') return [];
+            const parts = text.split(/,(?=\()/);
+            return parts.map(p => p.trim()).filter(p => p.length > 0);
+        }
+
+        function parseProcedimento(text) {
+            const match = text.match(/^\((\d+)\)\s*\(([^)]+)\):\s*(.+)$/);
+            if (match) {
+                return {
+                    procedimento: text.trim(),
+                    codigo: match[1],
+                    legenda: match[2].trim()
+                };
+            }
+            return null;
+        }
+
+        function getUniqueValues(data, columnKey) {
+            const values = new Set();
+            data.forEach(row => {
+                const value = String(row[columnKey] || '').trim();
+                if (value) values.add(value);
+            });
+            return Array.from(values);
+        }
+
+        function normalizeText(text) {
+            return String(text || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function compareClinicaLab() {
+            const clinicaMap = new Map();
+            clinicaExpanded.forEach(row => {
+                const nome = normalizeText(row['Paciente']);
+                const codigo = normalizeText(row['Legenda']);
+                const chave = `${nome}|||${codigo}`;
+                if (!clinicaMap.has(chave)) {
+                    clinicaMap.set(chave, {
+                        nome: row['Paciente'] || '',
+                        codigo: codigo,
+                        exameClinica: row['Legenda'] || ''
+                    });
+                }
+            });
+
+            const labMap = new Map();
+            labProcessed.forEach(row => {
+                const nome = normalizeText(row['Nome do Paciente']);
+                const codigo = normalizeText(row['Codigo Exame']);
+                const chave = `${nome}|||${codigo}`;
+                if (!labMap.has(chave)) {
+                    labMap.set(chave, {
+                        nome: row['Nome do Paciente'] || '',
+                        codigo: codigo,
+                        exameLab: row['Descrição Exame'] || row['Codigo Exame'] || ''
+                    });
+                }
+            });
+
+            const comparison = [];
+            const allKeys = new Set([...clinicaMap.keys(), ...labMap.keys()]);
+            const divergencePatients = new Set();
+
+            let ambos = 0;
+            let somenteClinica = 0;
+            let somenteLab = 0;
+
+            allKeys.forEach(chave => {
+                const clinicaItem = clinicaMap.get(chave);
+                const labItem = labMap.get(chave);
+                let status = '';
+                let nome = '';
+
+                if (clinicaItem && labItem) {
+                    status = 'REGISTRADO EM AMBOS';
+                    nome = clinicaItem.nome || labItem.nome;
+                    ambos++;
+                } else if (clinicaItem) {
+                    status = 'APENAS NA CLÍNICA';
+                    nome = clinicaItem.nome;
+                    somenteClinica++;
+                    divergencePatients.add(normalizeText(nome));
+                } else if (labItem) {
+                    status = 'APENAS NO LABORATÓRIO';
+                    nome = labItem.nome;
+                    somenteLab++;
+                    divergencePatients.add(normalizeText(nome));
+                }
+
+                comparison.push({
+                    NOME: nome,
+                    CODIGO: clinicaItem ? clinicaItem.codigo : (labItem ? labItem.codigo : ''),
+                    'EXAME CLINICA': clinicaItem ? clinicaItem.exameClinica : '',
+                    'EXAME LABORATORIO': labItem ? labItem.exameLab : '',
+                    STATUS: status
+                });
+            });
+
+            comparisonData = comparison;
+            patientsToVerifyCount = divergencePatients.size;
+
+            return {
+                total: comparison.length,
+                ambos,
+                somenteClinica,
+                somenteLab
+            };
+        }
+
+        // ===== BUSCA INTERATIVA =====
+
+        function handleSearch() {
+            const searchTerm = searchInput.value.trim();
+
+            if (!searchTerm) {
+                document.getElementById('searchSuggestions').textContent = 'Digite para buscar pacientes';
+                document.getElementById('summaryContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>Digite um nome no campo acima para ver o resumo</p></div>';
+                document.getElementById('comparisonSection').style.display = 'none';
+                document.getElementById('clinicaOriginalSection').style.display = 'none';
+                document.getElementById('labOriginalSection').style.display = 'none';
+                return;
+            }
+
+            const normalizedSearch = normalizeText(searchTerm);
+
+            // Filtrar dados da clínica
+            const clinicaFiltered = clinicaExpanded.filter(row => {
+                const nome = normalizeText(row['Paciente'] || '');
+                return nome.includes(normalizedSearch);
+            });
+
+            // Filtrar dados do laboratório
+            const labFiltered = labProcessed.filter(row => {
+                const nome = normalizeText(row['Nome do Paciente'] || '');
+                return nome.includes(normalizedSearch);
+            });
+
+            // Filtrar comparação
+            const comparisonFiltered = comparisonData.filter(row => {
+                const nome = normalizeText(row.NOME || '');
+                return nome.includes(normalizedSearch);
+            });
+
+            // Contar pacientes únicos
+            const uniquePatients = new Set();
+            clinicaFiltered.forEach(row => uniquePatients.add(normalizeText(row['Paciente'] || '')));
+            labFiltered.forEach(row => uniquePatients.add(normalizeText(row['Nome do Paciente'] || '')));
+
+            if (uniquePatients.size === 0) {
+                document.getElementById('searchSuggestions').textContent = 'Nenhum paciente encontrado';
+                document.getElementById('summaryContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>Nenhum resultado encontrado para esta busca</p></div>';
+                document.getElementById('comparisonSection').style.display = 'none';
+                document.getElementById('clinicaOriginalSection').style.display = 'none';
+                document.getElementById('labOriginalSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('searchSuggestions').textContent = `${uniquePatients.size} paciente(s) encontrado(s)`;
+
+            // Renderizar resumo
+            renderSummary(clinicaFiltered, labFiltered, comparisonFiltered, uniquePatients);
+
+            // Renderizar comparação sintética
+            renderComparison(comparisonFiltered);
+
+            // Renderizar tabelas originais
+            renderOriginalTables(clinicaFiltered, labFiltered);
+        }
+
+        function renderSummary(clinicaFiltered, labFiltered, comparisonFiltered, uniquePatients) {
+            const ambos = comparisonFiltered.filter(r => r.STATUS === 'REGISTRADO EM AMBOS').length;
+            const somenteClinica = comparisonFiltered.filter(r => r.STATUS === 'APENAS NA CLÍNICA').length;
+            const somenteLab = comparisonFiltered.filter(r => r.STATUS === 'APENAS NO LABORATÓRIO').length;
+
+            const patientsNames = Array.from(uniquePatients).map(normalized => {
+                const row = clinicaFiltered.find(r => normalizeText(r['Paciente']) === normalized) ||
+                            labFiltered.find(r => normalizeText(r['Nome do Paciente']) === normalized);
+                return row ? (row['Paciente'] || row['Nome do Paciente']) : '';
+            }).filter(n => n).join(', ');
+
+            const html = `
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${uniquePatients.size}</div>
+                        <div class="stat-label">Paciente(s) Encontrado(s)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${clinicaFiltered.length}</div>
+                        <div class="stat-label">Total Clínica</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${labFiltered.length}</div>
+                        <div class="stat-label">Total Laboratório</div>
+                    </div>
+                    <div class="stat-item success">
+                        <div class="stat-value">${ambos}</div>
+                        <div class="stat-label">✓ Em Ambos</div>
+                    </div>
+                    <div class="stat-item ${somenteClinica > 0 ? 'error' : ''}">
+                        <div class="stat-value">${somenteClinica}</div>
+                        <div class="stat-label">✗ Apenas Clínica</div>
+                    </div>
+                    <div class="stat-item ${somenteLab > 0 ? 'warning' : ''}">
+                        <div class="stat-value">${somenteLab}</div>
+                        <div class="stat-label">✗ Apenas Lab</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                    <strong>Pacientes:</strong> ${patientsNames}
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn-copy" onclick="copyToClipboard()">📋 Copiar Resumo</button>
+                </div>
+            `;
+
+            document.getElementById('summaryContent').innerHTML = html;
+        }
+
+        function renderComparison(comparisonFiltered) {
+            const clinicaExams = new Map();
+            const labExams = new Map();
+
+            comparisonFiltered.forEach(row => {
+                if (row['EXAME CLINICA']) {
+                    const key = row.CODIGO || row['EXAME CLINICA'];
+                    clinicaExams.set(key, {
+                        name: row['EXAME CLINICA'],
+                        matched: row.STATUS === 'REGISTRADO EM AMBOS'
+                    });
+                }
+                if (row['EXAME LABORATORIO']) {
+                    const key = row.CODIGO || row['EXAME LABORATORIO'];
+                    labExams.set(key, {
+                        name: row['EXAME LABORATORIO'],
+                        matched: row.STATUS === 'REGISTRADO EM AMBOS'
+                    });
+                }
+            });
+
+            let clinicaHTML = '';
+            clinicaExams.forEach((exam, code) => {
+                const cssClass = exam.matched ? 'matched' : 'unmatched';
+                clinicaHTML += `<div class="exam-item ${cssClass}">(${code}) ${exam.name}</div>`;
+            });
+
+            let labHTML = '';
+            labExams.forEach((exam, code) => {
+                const cssClass = exam.matched ? 'matched' : 'unmatched';
+                labHTML += `<div class="exam-item ${cssClass}">(${code}) ${exam.name}</div>`;
+            });
+
+            document.getElementById('clinicaCount').textContent = clinicaExams.size;
+            document.getElementById('labCount').textContent = labExams.size;
+            document.getElementById('clinicaList').innerHTML = clinicaHTML || '<div class="no-results">Nenhum exame encontrado</div>';
+            document.getElementById('labList').innerHTML = labHTML || '<div class="no-results">Nenhum exame encontrado</div>';
+
+            document.getElementById('comparisonSection').style.display = 'block';
+        }
+
+        function renderOriginalTables(clinicaFiltered, labFiltered) {
+            // Tabela Clínica
+            if (clinicaFiltered.length > 0) {
+                const headers = clinicaFiltered[0]._headers;
+                let headHTML = '<tr>';
+                headers.forEach(h => {
+                    headHTML += `<th>${h}</th>`;
+                });
+                headHTML += '</tr>';
+
+                let bodyHTML = '';
+                clinicaFiltered.forEach(row => {
+                    bodyHTML += '<tr>';
+                    headers.forEach(h => {
+                        bodyHTML += `<td>${row[h] || ''}</td>`;
+                    });
+                    bodyHTML += '</tr>';
+                });
+
+                document.getElementById('clinicaOriginalHead').innerHTML = headHTML;
+                document.getElementById('clinicaOriginalBody').innerHTML = bodyHTML;
+                document.getElementById('clinicaOriginalCount').textContent = clinicaFiltered.length;
+                document.getElementById('clinicaOriginalSection').style.display = 'block';
+            } else {
+                document.getElementById('clinicaOriginalSection').style.display = 'none';
+            }
+
+            // Tabela Laboratório
+            if (labFiltered.length > 0) {
+                const headers = labFiltered[0]._headers;
+                let headHTML = '<tr>';
+                headers.forEach(h => {
+                    headHTML += `<th>${h}</th>`;
+                });
+                headHTML += '</tr>';
+
+                let bodyHTML = '';
+                labFiltered.forEach(row => {
+                    bodyHTML += '<tr>';
+                    headers.forEach(h => {
+                        bodyHTML += `<td>${row[h] || ''}</td>`;
+                    });
+                    bodyHTML += '</tr>';
+                });
+
+                document.getElementById('labOriginalHead').innerHTML = headHTML;
+                document.getElementById('labOriginalBody').innerHTML = bodyHTML;
+                document.getElementById('labOriginalCount').textContent = labFiltered.length;
+                document.getElementById('labOriginalSection').style.display = 'block';
+            } else {
+                document.getElementById('labOriginalSection').style.display = 'none';
+            }
+        }
+
+        function copyToClipboard() {
+            const searchTerm = searchInput.value.trim();
+
+            // Pegar valores das estatísticas
+            const pacientes = document.querySelector('.stat-item:nth-child(1) .stat-value').textContent;
+            const totalClinica = document.querySelector('.stat-item:nth-child(2) .stat-value').textContent;
+            const totalLab = document.querySelector('.stat-item:nth-child(3) .stat-value').textContent;
+            const emAmbos = document.querySelector('.stat-item:nth-child(4) .stat-value').textContent;
+            const apenasClinica = document.querySelector('.stat-item:nth-child(5) .stat-value').textContent;
+            const apenasLab = document.querySelector('.stat-item:nth-child(6) .stat-value').textContent;
+
+            // Pegar nomes dos pacientes
+            const pacientesNomes = document.querySelector('.summary-section [style*="margin-top: 20px"]').textContent.replace('Pacientes: ', '').trim();
+
+            // Formato de tabela para colar
+            const summaryText = `Paciente(s) Encontrado(s)\t${pacientes}
+Total Clínica\t${totalClinica}
+Total Laboratório\t${totalLab}
+✓ Em Ambos\t${emAmbos}
+✗ Apenas Clínica\t${apenasClinica}
+✗ Apenas Lab\t${apenasLab}
+Pacientes: ${pacientesNomes}`;
+
+            navigator.clipboard.writeText(summaryText).then(() => {
+                alert('✓ Resumo copiado para a área de transferência!\n\nFormatado para colar no Excel ou Word.');
+            }).catch(err => {
+                alert('Erro ao copiar: ' + err.message);
+            });
+        }
+
+        function copyComparison() {
+            // Pegar exames da clínica
+            const clinicaItems = document.querySelectorAll('#clinicaList .exam-item');
+            const labItems = document.querySelectorAll('#labList .exam-item');
+
+            let textContent = 'CLÍNICA\tLABORATÓRIO\n';
+
+            const maxLength = Math.max(clinicaItems.length, labItems.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                const clinicaText = clinicaItems[i] ? clinicaItems[i].textContent.trim() : '';
+                const labText = labItems[i] ? labItems[i].textContent.trim() : '';
+                textContent += `${clinicaText}\t${labText}\n`;
+            }
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                alert('✓ Comparação copiada!\n\nFormatada em 2 colunas para Excel/Word.');
+            }).catch(err => {
+                alert('Erro ao copiar: ' + err.message);
+            });
+        }
+
+        function copyClinicaTable() {
+            const table = document.getElementById('clinicaOriginalTable');
+            let textContent = '';
+
+            // Copiar cabeçalhos
+            const headers = table.querySelectorAll('thead th');
+            const headerTexts = Array.from(headers).map(th => th.textContent);
+            textContent += headerTexts.join('\t') + '\n';
+
+            // Copiar linhas
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const cellTexts = Array.from(cells).map(td => td.textContent);
+                textContent += cellTexts.join('\t') + '\n';
+            });
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                alert('✓ Tabela da Clínica copiada!\n\n' + rows.length + ' linhas copiadas para Excel/Word.');
+            }).catch(err => {
+                alert('Erro ao copiar: ' + err.message);
+            });
+        }
+
+        function copyLabTable() {
+            const table = document.getElementById('labOriginalTable');
+            let textContent = '';
+
+            // Copiar cabeçalhos
+            const headers = table.querySelectorAll('thead th');
+            const headerTexts = Array.from(headers).map(th => th.textContent);
+            textContent += headerTexts.join('\t') + '\n';
+
+            // Copiar linhas
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const cellTexts = Array.from(cells).map(td => td.textContent);
+                textContent += cellTexts.join('\t') + '\n';
+            });
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                alert('✓ Tabela do Laboratório copiada!\n\n' + rows.length + ' linhas copiadas para Excel/Word.');
+            }).catch(err => {
+                alert('Erro ao copiar: ' + err.message);
+            });
+        }
+
+        async function downloadResult() {
+            try {
+                addStatus('Gerando arquivo Excel Premium com formatação...', 'processing');
+
+                const workbook = new ExcelJS.Workbook();
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+                const timeStr = now.toTimeString().slice(0, 5).replace(/:/g, '');
+
+                const headerStyle = {
+                    font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00796B' } },
+                    alignment: { vertical: 'middle', horizontal: 'center' },
+                    border: {
+                        top: { style: 'medium', color: { argb: 'FF004D40' } },
+                        left: { style: 'medium', color: { argb: 'FF004D40' } },
+                        bottom: { style: 'medium', color: { argb: 'FF004D40' } },
+                        right: { style: 'medium', color: { argb: 'FF004D40' } }
+                    }
+                };
+
+                const cellBorder = {
+                    top: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+                    left: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+                    bottom: { style: 'thin', color: { argb: 'FFD0D0D0' } },
+                    right: { style: 'thin', color: { argb: 'FFD0D0D0' } }
+                };
+
+                const ws1 = workbook.addWorksheet('CLINICA ORIGINAL');
+                const clinicaHeaders = clinicaProcessed[0]._headers;
+                ws1.addRow(clinicaHeaders);
+                clinicaProcessed.forEach(row => {
+                    ws1.addRow(clinicaHeaders.map(h => row[h] || ''));
+                });
+                applyStandardFormatting(ws1, clinicaHeaders.length);
+
+                const ws2 = workbook.addWorksheet('CLINICA EXPANDIDO');
+                const expandedHeaders = [...clinicaHeaders, 'Procedimento', 'Código - DB', 'Legenda'];
+                ws2.addRow(expandedHeaders);
+                clinicaExpanded.forEach(row => {
+                    ws2.addRow(expandedHeaders.map(h => row[h] || ''));
+                });
+                applyStandardFormatting(ws2, expandedHeaders.length);
+
+                const ws3 = workbook.addWorksheet('LABORATORIO ORIGINAL');
+                const labHeaders = labProcessed[0]._headers;
+                ws3.addRow(labHeaders);
+                labProcessed.forEach(row => {
+                    ws3.addRow(labHeaders.map(h => row[h] || ''));
+                });
+                applyStandardFormatting(ws3, labHeaders.length);
+
+                const ws4 = workbook.addWorksheet('COMPARACAO');
+                const comparisonHeaders = ['NOME', 'CODIGO', 'EXAME CLINICA', 'EXAME LABORATORIO', 'STATUS'];
+                ws4.addRow(comparisonHeaders);
+
+                comparisonData.forEach(row => {
+                    const rowData = comparisonHeaders.map(h => row[h] || '');
+                    const excelRow = ws4.addRow(rowData);
+
+                    const status = row.STATUS;
+                    let fillColor = '';
+
+                    if (status === 'REGISTRADO EM AMBOS') {
+                        fillColor = 'FFC8E6C9';
+                    } else if (status === 'APENAS NA CLÍNICA') {
+                        fillColor = 'FFFFF9C4';
+                    } else if (status === 'APENAS NO LABORATÓRIO') {
+                        fillColor = 'FFFFE0B2';
+                    }
+
+                    excelRow.eachCell({ includeEmpty: true }, (cell) => {
+                        cell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: fillColor }
+                        };
+                        cell.border = cellBorder;
+                        cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                    });
+                });
+
+                applyStandardFormatting(ws4, comparisonHeaders.length);
+
+                const ws5 = workbook.addWorksheet('RESUMO DIVERGENCIAS');
+                const summaryMap = new Map();
+                comparisonData.forEach(row => {
+                    if (row.STATUS !== 'REGISTRADO EM AMBOS') {
+                        const nome = row.NOME || 'NOME DESCONHECIDO';
+                        summaryMap.set(nome, (summaryMap.get(nome) || 0) + 1);
+                    }
+                });
+
+                const summaryHeaders = ['NOME DO PACIENTE', 'QTD DIVERGÊNCIAS'];
+                ws5.addRow(summaryHeaders);
+
+                const sortedSummary = Array.from(summaryMap.entries()).sort((a, b) => b[1] - a[1]);
+                const maxDivergences = sortedSummary.length > 0 ? sortedSummary[0][1] : 1;
+
+                sortedSummary.forEach(([nome, qtd]) => {
+                    const excelRow = ws5.addRow([nome, qtd]);
+
+                    const intensity = Math.min(qtd / maxDivergences, 1);
+                    const red = Math.round(255);
+                    const green = Math.round(255 * (1 - intensity * 0.7));
+                    const blue = Math.round(255 * (1 - intensity * 0.7));
+                    const colorHex = `FF${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+
+                    excelRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                        cell.border = cellBorder;
+                        cell.alignment = {
+                            vertical: 'middle',
+                            horizontal: colNumber === 2 ? 'center' : 'left'
+                        };
+
+                        if (colNumber === 2) {
+                            cell.fill = {
+                                type: 'pattern',
+                                pattern: 'solid',
+                                fgColor: { argb: colorHex }
+                            };
+                            cell.font = { bold: true, size: 11 };
+                        }
+                    });
+                });
+
+                applyStandardFormatting(ws5, summaryHeaders.length);
+                ws5.getColumn(1).width = 50;
+                ws5.getColumn(2).width = 20;
+
+                function applyStandardFormatting(worksheet, columnCount) {
+                    const headerRow = worksheet.getRow(1);
+                    headerRow.height = 25;
+                    headerRow.eachCell((cell) => {
+                        cell.style = headerStyle;
+                    });
+
+                    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+
+                    worksheet.autoFilter = {
+                        from: { row: 1, column: 1 },
+                        to: { row: 1, column: columnCount }
+                    };
+
+                    worksheet.eachRow((row, rowNumber) => {
+                        if (rowNumber > 1) {
+                            const isEven = rowNumber % 2 === 0;
+                            row.eachCell({ includeEmpty: true }, (cell) => {
+                                if (!cell.fill || !cell.fill.fgColor) {
+                                    cell.fill = {
+                                        type: 'pattern',
+                                        pattern: 'solid',
+                                        fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF5F5F5' }
+                                    };
+                                }
+                                if (!cell.border) {
+                                    cell.border = cellBorder;
+                                }
+                                if (!cell.alignment) {
+                                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                                }
+                            });
+                        }
+                    });
+
+                    worksheet.columns.forEach((column) => {
+                        let maxLength = 10;
+                        column.eachCell({ includeEmpty: false }, (cell) => {
+                            const cellValue = cell.value ? cell.value.toString() : '';
+                            maxLength = Math.max(maxLength, cellValue.length);
+                        });
+                        column.width = Math.min(maxLength + 2, 60);
+                    });
+                }
+
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const fileName = `Comparacao_Premium_${dateStr}_${timeStr}.xlsx`;
+                link.download = fileName;
+                link.click();
+                window.URL.revokeObjectURL(url);
+
+                addStatus(`✓ Arquivo ${fileName} baixado com sucesso!`, 'done');
+
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao gerar arquivo: ' + error.message);
+                addStatus('✗ Erro ao gerar arquivo: ' + error.message, 'error');
+            }
+        }
+
+        function addStatus(message, type) {
+            const div = document.createElement('div');
+            div.className = `status-item ${type}`;
+
+            const spinner = document.createElement('div');
+            spinner.className = 'spinner';
+            div.appendChild(spinner);
+
+            const text = document.createElement('span');
+            text.textContent = message;
+            div.appendChild(text);
+
+            statusList.appendChild(div);
+            statusList.scrollTop = statusList.scrollHeight;
+            return div;
+        }
+
+        function updateStatus(element, newMessage, newType) {
+            if (!element) return;
+            element.className = `status-item ${newType}`;
+            element.querySelector('span').textContent = newMessage;
+        }
+    </script>
+</body>
+</html>

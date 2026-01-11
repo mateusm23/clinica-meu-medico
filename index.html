@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Meu Médico - Portal de Automações</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #26a69a 0%, #00796b 100%);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 20px;
+            font-weight: 300;
+            opacity: 0.95;
+            letter-spacing: 0.5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .partners-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .partner-card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Card Ativo */
+        .partner-card.active {
+            border: 3px solid #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+            cursor: pointer;
+        }
+
+        .partner-card.active:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Card Bloqueado */
+        .partner-card.locked {
+            border: 2px solid #e0e0e0;
+            background: #fafafa;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .card-badge.available {
+            background: #4caf50;
+            color: white;
+        }
+
+        .card-badge.locked {
+            background: #bdbdbd;
+            color: #757575;
+        }
+
+        .card-icon {
+            font-size: 52px;
+            margin-bottom: 20px;
+            filter: grayscale(0);
+        }
+
+        .partner-card.locked .card-icon {
+            filter: grayscale(100%);
+            opacity: 0.5;
+        }
+
+        .partner-card h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .partner-card.locked h3 {
+            color: #9e9e9e;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+
+        .partner-card.locked .card-subtitle {
+            color: #bdbdbd;
+        }
+
+        .card-stats {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .btn-access {
+            width: 100%;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .partner-card.active .btn-access {
+            background: linear-gradient(135deg, #26a69a 0%, #00796b 100%);
+            color: white;
+        }
+
+        .partner-card.active .btn-access:hover {
+            background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+            transform: scale(1.05);
+        }
+
+        .partner-card.locked .btn-access {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .footer-info {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .footer-contact {
+            font-size: 16px;
+            font-weight: 600;
+            color: #26a69a;
+            margin-bottom: 15px;
+        }
+
+        .footer-meta {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .partners-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .partners-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .partner-card {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CLÍNICA MEU MÉDICO</h1>
+        <p>PORTAL DE AUTOMAÇÕES DE GESTÃO</p>
+    </div>
+
+    <div class="container">
+        <div class="partners-grid">
+            <!-- Card 1: DB DIAGNÓSTICO - ATIVO -->
+            <div class="partner-card active" onclick="window.location.href='comparador-db.html'">
+                <div class="card-badge available">✓ DISPONÍVEL</div>
+                <div class="card-icon">🔬</div>
+                <h3>DB DIAGNÓSTICO</h3>
+                <p class="card-subtitle">Laboratório de Análises Clínicas</p>
+                <div class="card-stats">Última atualização: Hoje</div>
+                <button class="btn-access">ACESSAR SISTEMA</button>
+            </div>
+
+            <!-- Card 2: NEUROCENTRO - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">🧠</div>
+                <h3>NEUROCENTRO</h3>
+                <p class="card-subtitle">Centro Neurológico</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 3: NOVA ERA - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">🏥</div>
+                <h3>NOVA ERA</h3>
+                <p class="card-subtitle">Laboratório Multidisciplinar</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 4: AME CARDIO - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">❤️</div>
+                <h3>AME CARDIO</h3>
+                <p class="card-subtitle">Centro de Cardiologia</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 5: CEMED - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">💊</div>
+                <h3>CEMED</h3>
+                <p class="card-subtitle">Centro de Medicina Diagnóstica</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 6: SÃO LUCAS - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">🏨</div>
+                <h3>SÃO LUCAS</h3>
+                <p class="card-subtitle">Hospital e Laboratório</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 7: CIMRAD - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">📡</div>
+                <h3>CIMRAD</h3>
+                <p class="card-subtitle">Centro de Imagem e Radiologia</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 8: GT DIAGNÓSTICO - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">🔍</div>
+                <h3>GT DIAGNÓSTICO</h3>
+                <p class="card-subtitle">Laboratório de Análises</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+
+            <!-- Card 9: CENTER X - BLOQUEADO -->
+            <div class="partner-card locked">
+                <div class="card-badge locked">🔒 EM DESENVOLVIMENTO</div>
+                <div class="card-icon">⚕️</div>
+                <h3>CENTER X</h3>
+                <p class="card-subtitle">Centro Médico Integrado</p>
+                <div class="card-stats">Previsão: Em breve</div>
+                <button class="btn-access" disabled>BLOQUEADO</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-info">Portal de Automações - Clínica Meu Médico</div>
+        <div class="footer-contact">Mateus Monteiro - (62) 99156-3421</div>
+        <div class="footer-meta">
+            Sistema de Gestão v1.0 | Última atualização: Janeiro 2026<br>
+            1 de 9 parceiros ativos
+        </div>
+    </div>
+</body>
+</html>

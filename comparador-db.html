@@ -255,6 +255,78 @@
             font-weight: bold;
         }
 
+        /* Seção Financeira */
+        .financial-section {
+            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            color: white;
+        }
+
+        .financial-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .financial-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .financial-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .financial-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .financial-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .financial-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .financial-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin: 10px 0;
+        }
+
+        .financial-value.negative {
+            color: #c62828;
+        }
+
+        .financial-value.positive {
+            color: #2e7d32;
+        }
+
+        .financial-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* Seção 1: Pesquisa */
         .search-section {
             background: #e0f2f1;
@@ -601,6 +673,28 @@
             <div id="analysisPanel">
                 <h2 class="analysis-title">🔍 Análise Interativa de Pacientes</h2>
 
+                <!-- RESUMO FINANCEIRO -->
+                <div class="financial-section" id="financialSection" style="display: none;">
+                    <h3>💰 RESUMO FINANCEIRO</h3>
+                    <div class="financial-grid">
+                        <div class="financial-card">
+                            <div class="financial-icon">💵</div>
+                            <div class="financial-value" id="totalFaturado">R$ 0,00</div>
+                            <div class="financial-label">Total Faturado (Clínica)</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-icon">🏥</div>
+                            <div class="financial-value" id="totalPago">R$ 0,00</div>
+                            <div class="financial-label">Total Pago (Laboratório)</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-icon">📊</div>
+                            <div class="financial-value" id="diferenca">R$ 0,00</div>
+                            <div class="financial-label">Diferença</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Seção 1: Pesquisa -->
                 <div class="search-section">
                     <h3>1️⃣ PESQUISA</h3>
@@ -676,6 +770,11 @@
         let labProcessed = null;
         let comparisonData = null;
         let patientsToVerifyCount = 0;
+
+        // Variáveis financeiras
+        let totalFaturadoClinica = 0;
+        let totalPagoLaboratorio = 0;
+        let financialData = [];
 
         const fileClinica = document.getElementById('fileClinica');
         const fileLab = document.getElementById('fileLab');
@@ -869,11 +968,18 @@
                     addStatus(`✓ SUCESSO TOTAL: Nenhuma divergência encontrada.`, 'done');
                 }
 
+                // Calcular totais financeiros
+                statusEl = addStatus('Calculando Totais Financeiros...', 'processing');
+                await wait(1000);
+                calculateFinancials();
+                updateStatus(statusEl, `✓ Totais Calculados: Faturado R$ ${totalFaturadoClinica.toFixed(2)} | Pago R$ ${totalPagoLaboratorio.toFixed(2)}`, 'done');
+
                 btnDownload.style.display = 'inline-block';
-                btnDownload.innerText = 'Baixar Resultado Premium (5 Abas)';
+                btnDownload.innerText = 'Baixar Resultado Premium (6 Abas)';
 
                 // Mostrar painel de análise
                 document.getElementById('analysisPanel').style.display = 'block';
+                document.getElementById('financialSection').style.display = 'block';
 
                 // Scroll suave até o painel
                 setTimeout(() => {
@@ -912,6 +1018,140 @@
                 if (value) values.add(value);
             });
             return Array.from(values);
+        }
+
+        // Função robusta para converter valores brasileiros em número
+        function parseValorBR(valorStr) {
+            if (!valorStr) return 0;
+
+            // Converter para string e limpar espaços
+            let valor = String(valorStr).trim();
+
+            // Se já é um número, retornar
+            if (typeof valorStr === 'number') return valorStr;
+
+            // Remover "R$" se existir
+            valor = valor.replace(/R\$/g, '').trim();
+
+            // Contar quantos pontos e vírgulas existem
+            const qtdPontos = (valor.match(/\./g) || []).length;
+            const qtdVirgulas = (valor.match(/,/g) || []).length;
+
+            // Caso 1: Formato brasileiro com ponto de milhar e vírgula decimal (1.234,56)
+            if (qtdPontos >= 1 && qtdVirgulas === 1) {
+                valor = valor.replace(/\./g, '').replace(',', '.');
+            }
+            // Caso 2: Apenas vírgula decimal (1234,56)
+            else if (qtdVirgulas === 1 && qtdPontos === 0) {
+                valor = valor.replace(',', '.');
+            }
+            // Caso 3: Formato americano com vírgula de milhar e ponto decimal (1,234.56)
+            else if (qtdVirgulas >= 1 && qtdPontos === 1) {
+                valor = valor.replace(/,/g, '');
+            }
+            // Caso 4: Apenas ponto como decimal (1234.56) - já está correto
+            // Caso 5: Sem separadores (1234) - já está correto
+
+            const resultado = parseFloat(valor);
+            return isNaN(resultado) ? 0 : resultado;
+        }
+
+        function calculateFinancials() {
+            // Resetar totais
+            totalFaturadoClinica = 0;
+            totalPagoLaboratorio = 0;
+            financialData = [];
+
+            // 1. Calcular total PAGO pelo laboratório (coluna "Valor")
+            labProcessed.forEach(row => {
+                const valor = parseValorBR(row['Valor']);
+                totalPagoLaboratorio += valor;
+            });
+
+            // 2. Calcular total FATURADO pela clínica (coluna "Paciente 2")
+            // IMPORTANTE: Como os valores são duplicados ao expandir, precisamos usar clinicaProcessed
+            // (antes da expansão) para evitar contar valores repetidos
+            const pacientesProcessados = new Map(); // Chave: Nome Paciente, Valor: Total
+
+            clinicaProcessed.forEach(row => {
+                const pacienteNome = String(row['Paciente'] || '').trim();
+                const valor = parseValorBR(row['Paciente 2']);
+
+                if (pacienteNome && valor > 0) {
+                    // Somar valores por paciente (caso haja duplicatas na base original)
+                    if (pacientesProcessados.has(pacienteNome)) {
+                        pacientesProcessados.set(pacienteNome, pacientesProcessados.get(pacienteNome) + valor);
+                    } else {
+                        pacientesProcessados.set(pacienteNome, valor);
+                    }
+                }
+            });
+
+            // Somar todos os valores únicos por paciente
+            pacientesProcessados.forEach(valor => {
+                totalFaturadoClinica += valor;
+            });
+
+            // DEBUG: Log dos totais
+            console.log('=== CÁLCULO FINANCEIRO ===');
+            console.log('Total de registros em clinicaProcessed:', clinicaProcessed.length);
+            console.log('Total de pacientes únicos:', pacientesProcessados.size);
+            console.log('Total Faturado Calculado:', totalFaturadoClinica.toFixed(2));
+            console.log('Total Pago Calculado:', totalPagoLaboratorio.toFixed(2));
+            console.log('Primeiros 5 pacientes:');
+            let count = 0;
+            pacientesProcessados.forEach((valor, nome) => {
+                if (count < 5) {
+                    console.log(`  ${nome}: R$ ${valor.toFixed(2)}`);
+                    count++;
+                }
+            });
+
+            // 3. Atualizar interface
+            const diferenca = totalFaturadoClinica - totalPagoLaboratorio;
+
+            document.getElementById('totalFaturado').textContent = `R$ ${totalFaturadoClinica.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('totalPago').textContent = `R$ ${totalPagoLaboratorio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('diferenca').textContent = `R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            // Colorir diferença
+            const diferencaEl = document.getElementById('diferenca');
+            if (diferenca > 0) {
+                diferencaEl.classList.remove('negative');
+                diferencaEl.classList.add('positive');
+            } else if (diferenca < 0) {
+                diferencaEl.classList.remove('positive');
+                diferencaEl.classList.add('negative');
+            } else {
+                diferencaEl.classList.remove('positive', 'negative');
+            }
+
+            // 4. Preparar dados detalhados por paciente para o Excel
+            pacientesProcessados.forEach((valorFaturado, pacienteNome) => {
+                // Buscar valores pagos pelo laboratório para esse paciente
+                const examesLab = labProcessed.filter(row => {
+                    const nomeOriginal = cleanPatientName(row['Nome do Paciente'] || '');
+                    const nomeNormalizado = normalizeText(nomeOriginal);
+                    return nomeNormalizado === normalizeText(cleanPatientName(pacienteNome));
+                });
+
+                const valorPago = examesLab.reduce((sum, row) => {
+                    return sum + parseValorBR(row['Valor']);
+                }, 0);
+
+                const qtdExames = examesLab.length;
+
+                financialData.push({
+                    paciente: pacienteNome,
+                    qtdExames: qtdExames,
+                    valorFaturado: valorFaturado,
+                    valorPago: valorPago,
+                    diferenca: valorFaturado - valorPago
+                });
+            });
+
+            // Ordenar por diferença (maior para menor)
+            financialData.sort((a, b) => Math.abs(b.diferenca) - Math.abs(a.diferenca));
         }
 
         function normalizeText(text) {
@@ -1451,6 +1691,96 @@ Pacientes: ${pacientesNomes}`;
                 ws5.getColumn(1).width = 50;
                 ws5.getColumn(2).width = 20;
 
+                // ABA 6: RESUMO FINANCEIRO
+                const ws6 = workbook.addWorksheet('RESUMO FINANCEIRO');
+
+                // Seção 1: Totais Gerais
+                ws6.addRow(['RESUMO FINANCEIRO GERAL']);
+                ws6.getRow(1).font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+                ws6.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+                ws6.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+                ws6.mergeCells('A1:D1');
+                ws6.getRow(1).height = 30;
+
+                ws6.addRow([]);
+                ws6.addRow(['Descrição', 'Valor']);
+                ws6.getRow(3).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+                ws6.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00796B' } };
+                ws6.getRow(3).alignment = { vertical: 'middle', horizontal: 'center' };
+
+                const totalFatRow = ws6.addRow(['Total Faturado (Clínica)', totalFaturadoClinica]);
+                totalFatRow.getCell(2).numFmt = 'R$ #,##0.00';
+                totalFatRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF2E7D32' } };
+                totalFatRow.getCell(2).alignment = { horizontal: 'right' };
+
+                const totalPagoRow = ws6.addRow(['Total Pago (Laboratório)', totalPagoLaboratorio]);
+                totalPagoRow.getCell(2).numFmt = 'R$ #,##0.00';
+                totalPagoRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF1976D2' } };
+                totalPagoRow.getCell(2).alignment = { horizontal: 'right' };
+
+                const diferenca = totalFaturadoClinica - totalPagoLaboratorio;
+                const difRow = ws6.addRow(['Diferença', diferenca]);
+                difRow.getCell(2).numFmt = 'R$ #,##0.00';
+                difRow.getCell(2).font = { bold: true, size: 12, color: { argb: diferenca >= 0 ? 'FF2E7D32' : 'FFC62828' } };
+                difRow.getCell(2).alignment = { horizontal: 'right' };
+
+                ws6.addRow([]);
+                ws6.addRow([]);
+
+                // Seção 2: Detalhamento por Paciente
+                ws6.addRow(['DETALHAMENTO POR PACIENTE']);
+                ws6.getRow(9).font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+                ws6.getRow(9).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+                ws6.getRow(9).alignment = { vertical: 'middle', horizontal: 'center' };
+                ws6.mergeCells('A9:E9');
+                ws6.getRow(9).height = 25;
+
+                ws6.addRow([]);
+                const detailHeaders = ['Paciente', 'Qtd Exames', 'Valor Faturado (Clínica)', 'Valor Pago (Lab)', 'Diferença'];
+                const headerRow6 = ws6.addRow(detailHeaders);
+                headerRow6.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
+                headerRow6.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00796B' } };
+                headerRow6.alignment = { vertical: 'middle', horizontal: 'center' };
+                headerRow6.height = 20;
+
+                financialData.forEach(item => {
+                    const detailRow = ws6.addRow([
+                        item.paciente,
+                        item.qtdExames,
+                        item.valorFaturado,
+                        item.valorPago,
+                        item.diferenca
+                    ]);
+
+                    // Formatação de valores
+                    detailRow.getCell(2).alignment = { horizontal: 'center' };
+                    detailRow.getCell(3).numFmt = 'R$ #,##0.00';
+                    detailRow.getCell(4).numFmt = 'R$ #,##0.00';
+                    detailRow.getCell(5).numFmt = 'R$ #,##0.00';
+
+                    // Colorir diferença
+                    if (item.diferenca > 0) {
+                        detailRow.getCell(5).font = { color: { argb: 'FF2E7D32' }, bold: true };
+                    } else if (item.diferenca < 0) {
+                        detailRow.getCell(5).font = { color: { argb: 'FFC62828' }, bold: true };
+                    }
+
+                    // Bordas
+                    detailRow.eachCell({ includeEmpty: true }, (cell) => {
+                        cell.border = cellBorder;
+                    });
+                });
+
+                // Ajustar larguras das colunas
+                ws6.getColumn(1).width = 50; // Paciente
+                ws6.getColumn(2).width = 15; // Qtd Exames
+                ws6.getColumn(3).width = 25; // Valor Faturado
+                ws6.getColumn(4).width = 25; // Valor Pago
+                ws6.getColumn(5).width = 20; // Diferença
+
+                // Congelar painéis
+                ws6.views = [{ state: 'frozen', ySplit: 11 }];
+
                 function applyStandardFormatting(worksheet, columnCount) {
                     const headerRow = worksheet.getRow(1);
                     headerRow.height = 25;
@@ -1506,7 +1836,7 @@ Pacientes: ${pacientesNomes}`;
                 link.click();
                 window.URL.revokeObjectURL(url);
 
-                addStatus(`✓ Arquivo ${fileName} baixado com sucesso!`, 'done');
+                addStatus(`✓ Arquivo ${fileName} baixado com sucesso! (6 abas incluindo Resumo Financeiro)`, 'done');
 
             } catch (error) {
                 console.error(error);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Médico - Comparador de Listas (Pro V4)</title>
+    <title>Meu Médico - Comparador de Listas (Pro V5)</title>
 
     <!-- SheetJS Library (Para leitura) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -635,7 +635,7 @@
         <div class="header">
             <h1>Meu Médico - Comparador de Listas</h1>
             <p>Processamento de dados: Clínica nas Nuvens + Laboratório Parceiro</p>
-            <div class="badge">V4 - Análise Interativa de Pacientes</div>
+            <div class="badge">V5 - Novo Modelo de Relatório</div>
         </div>
 
         <div class="content">
@@ -676,11 +676,16 @@
                 <!-- RESUMO FINANCEIRO -->
                 <div class="financial-section" id="financialSection" style="display: none;">
                     <h3>💰 RESUMO FINANCEIRO</h3>
-                    <div class="financial-grid">
+                    <div class="financial-grid" style="grid-template-columns: repeat(5, 1fr);">
                         <div class="financial-card">
                             <div class="financial-icon">💵</div>
                             <div class="financial-value" id="totalFaturado">R$ 0,00</div>
                             <div class="financial-label">Total Faturado (Clínica)</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-icon">💳</div>
+                            <div class="financial-value" id="totalPagoClinica">R$ 0,00</div>
+                            <div class="financial-label">Total Pago (Clínica)</div>
                         </div>
                         <div class="financial-card">
                             <div class="financial-icon">🏥</div>
@@ -689,8 +694,13 @@
                         </div>
                         <div class="financial-card">
                             <div class="financial-icon">📊</div>
-                            <div class="financial-value" id="diferenca">R$ 0,00</div>
-                            <div class="financial-label">Diferença</div>
+                            <div class="financial-value" id="diferenca1">R$ 0,00</div>
+                            <div class="financial-label">Diferença (Faturado - Pago Clínica)</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-icon">📈</div>
+                            <div class="financial-value" id="diferenca2">R$ 0,00</div>
+                            <div class="financial-label">Diferença (Pago Clínica - Pago Lab)</div>
                         </div>
                     </div>
                 </div>
@@ -772,8 +782,9 @@
         let patientsToVerifyCount = 0;
 
         // Variáveis financeiras
-        let totalFaturadoClinica = 0;
-        let totalPagoLaboratorio = 0;
+        let totalFaturadoClinica = 0;  // Coluna "Valor faturado"
+        let totalPagoClinica = 0;       // Coluna "Valor pago"
+        let totalPagoLaboratorio = 0;   // Coluna "Valor" do lab
         let financialData = [];
 
         const fileClinica = document.getElementById('fileClinica');
@@ -798,7 +809,7 @@
 
             try {
                 document.getElementById('fileNameClinica').textContent = "Carregando...";
-                clinicaData = await readExcelFile(file, 2);
+                clinicaData = await readExcelFile(file, 6);
                 document.getElementById('fileNameClinica').textContent = `${file.name} - ${clinicaData.length} registros`;
                 document.getElementById('fileNameClinica').classList.add('success');
                 document.getElementById('uploadBox1').classList.add('has-file');
@@ -891,63 +902,36 @@
                 await wait(1500);
                 updateStatus(statusEl, 'Motor ETL Inicializado.', 'done');
 
-                statusEl = addStatus('Filtrando Clínica (Apenas Faturados)...', 'processing');
-                await wait(2000);
+                // Todos os dados já vêm faturados no novo modelo
+                clinicaProcessed = clinicaData;
 
-                const columnHeaders = clinicaData[0]._headers;
-                const situacaoColumns = columnHeaders.filter(col => String(col).toLowerCase().includes('situação') || String(col).toLowerCase().includes('situacao'));
-                let situacaoColumn = situacaoColumns.length > 0 ? situacaoColumns[0] : null;
+                statusEl = addStatus('Carregando dados da Clínica...', 'processing');
+                await wait(1000);
+                updateStatus(statusEl, `✓ ${clinicaProcessed.length} registros carregados.`, 'done');
 
-                if (situacaoColumns.length > 0) {
-                     for (const col of situacaoColumns) {
-                        const values = getUniqueValues(clinicaData, col);
-                        if (values.includes('Faturado')) {
-                            situacaoColumn = col;
-                            break;
-                        }
+                statusEl = addStatus('Extraindo códigos dos procedimentos...', 'processing');
+                await wait(1500);
+
+                const columnHeaders = clinicaProcessed[0]._headers;
+                const procedimentoColumn = columnHeaders.find(col => String(col).toLowerCase().includes('procedimento'));
+
+                // Não precisa mais expandir, apenas adicionar colunas com o parsing
+                clinicaExpanded = clinicaProcessed.map(row => {
+                    const procedimentoText = String(row[procedimentoColumn] || '');
+                    const parsed = parseProcedimento(procedimentoText);
+
+                    const newRow = { ...row };
+                    if (parsed) {
+                        newRow['Código - DB'] = parsed.codigo;
+                        newRow['Legenda'] = parsed.legenda;
+                    } else {
+                        newRow['Código - DB'] = '';
+                        newRow['Legenda'] = '';
                     }
-                }
-
-                clinicaProcessed = clinicaData.filter(row => {
-                    const value = String(row[situacaoColumn] || '').trim();
-                    return value === 'Faturado';
+                    return newRow;
                 });
 
-                updateStatus(statusEl, `✓ Filtro Aplicado: ${clinicaProcessed.length} registros faturados.`, 'done');
-
-                statusEl = addStatus('Normalizando e Expandindo Procedimentos...', 'processing');
-                await wait(2000);
-
-                const procedimentosColumns = columnHeaders.filter(col => String(col).toLowerCase().includes('procedimento'));
-                let procedimentosColumn = procedimentosColumns.length > 0 ? procedimentosColumns[0] : null;
-
-                if (procedimentosColumns.length > 0) {
-                     for (const col of procedimentosColumns) {
-                        const sampleValue = clinicaProcessed[0] ? String(clinicaProcessed[0][col] || '') : '';
-                        if (sampleValue.match(/\(\d+\)\s*\([^)]+\):/)) {
-                            procedimentosColumn = col;
-                            break;
-                        }
-                    }
-                }
-
-                clinicaExpanded = [];
-                clinicaProcessed.forEach(row => {
-                    const procedimentosText = String(row[procedimentosColumn] || '');
-                    const procedimentos = splitProcedimentos(procedimentosText);
-                    procedimentos.forEach(proc => {
-                        const parsed = parseProcedimento(proc);
-                        if (parsed) {
-                            const expandedRow = { ...row };
-                            expandedRow['Procedimento'] = parsed.procedimento;
-                            expandedRow['Código - DB'] = parsed.codigo;
-                            expandedRow['Legenda'] = parsed.legenda;
-                            clinicaExpanded.push(expandedRow);
-                        }
-                    });
-                });
-
-                updateStatus(statusEl, `✓ Normalização: ${clinicaExpanded.length} linhas geradas.`, 'done');
+                updateStatus(statusEl, `✓ Códigos extraídos: ${clinicaExpanded.length} registros processados.`, 'done');
 
                 statusEl = addStatus('Cruzando dados (Clínica x Laboratório)...', 'processing');
                 await wait(2000);
@@ -972,7 +956,7 @@
                 statusEl = addStatus('Calculando Totais Financeiros...', 'processing');
                 await wait(1000);
                 calculateFinancials();
-                updateStatus(statusEl, `✓ Totais Calculados: Faturado R$ ${totalFaturadoClinica.toFixed(2)} | Pago R$ ${totalPagoLaboratorio.toFixed(2)}`, 'done');
+                updateStatus(statusEl, `✓ Totais: Faturado R$ ${totalFaturadoClinica.toFixed(2)} | Pago Clínica R$ ${totalPagoClinica.toFixed(2)} | Pago Lab R$ ${totalPagoLaboratorio.toFixed(2)}`, 'done');
 
                 btnDownload.style.display = 'inline-block';
                 btnDownload.innerText = 'Baixar Resultado Premium (6 Abas)';
@@ -993,19 +977,18 @@
             }
         }
 
-        function splitProcedimentos(text) {
-            if (!text || text.trim() === '') return [];
-            const parts = text.split(/,(?=\()/);
-            return parts.map(p => p.trim()).filter(p => p.length > 0);
-        }
+        // Função splitProcedimentos removida - não é mais necessária no novo modelo
 
+        // Formato: (266) (FERRIA): FERRITINA
         function parseProcedimento(text) {
+            if (!text || text.trim() === '') return null;
+
             const match = text.match(/^\((\d+)\)\s*\(([^)]+)\):\s*(.+)$/);
             if (match) {
                 return {
-                    procedimento: text.trim(),
-                    codigo: match[1],
-                    legenda: match[2].trim()
+                    codigo: match[1].trim(),
+                    legenda: match[2].trim(),
+                    nome: match[3].trim()
                 };
             }
             return null;
@@ -1059,6 +1042,7 @@
         function calculateFinancials() {
             // Resetar totais
             totalFaturadoClinica = 0;
+            totalPagoClinica = 0;
             totalPagoLaboratorio = 0;
             financialData = [];
 
@@ -1068,28 +1052,36 @@
                 totalPagoLaboratorio += valor;
             });
 
-            // 2. Calcular total FATURADO pela clínica (coluna "Paciente 2")
-            // IMPORTANTE: Como os valores são duplicados ao expandir, precisamos usar clinicaProcessed
-            // (antes da expansão) para evitar contar valores repetidos
-            const pacientesProcessados = new Map(); // Chave: Nome Paciente, Valor: Total
+            // 2. Calcular totais da clínica (Valor faturado e Valor pago)
+            // IMPORTANTE: Usar clinicaProcessed para evitar duplicação de valores
+            const pacientesProcessados = new Map(); // Chave: Nome Paciente, Valor: {faturado, pago}
 
             clinicaProcessed.forEach(row => {
                 const pacienteNome = String(row['Paciente'] || '').trim();
-                const valor = parseValorBR(row['Paciente 2']);
+                const valorFaturado = parseValorBR(row['Valor faturado']);
+                const valorPago = parseValorBR(row['Valor pago']);
 
-                if (pacienteNome && valor > 0) {
+                if (pacienteNome && (valorFaturado > 0 || valorPago > 0)) {
                     // Somar valores por paciente (caso haja duplicatas na base original)
                     if (pacientesProcessados.has(pacienteNome)) {
-                        pacientesProcessados.set(pacienteNome, pacientesProcessados.get(pacienteNome) + valor);
+                        const current = pacientesProcessados.get(pacienteNome);
+                        pacientesProcessados.set(pacienteNome, {
+                            faturado: current.faturado + valorFaturado,
+                            pago: current.pago + valorPago
+                        });
                     } else {
-                        pacientesProcessados.set(pacienteNome, valor);
+                        pacientesProcessados.set(pacienteNome, {
+                            faturado: valorFaturado,
+                            pago: valorPago
+                        });
                     }
                 }
             });
 
             // Somar todos os valores únicos por paciente
-            pacientesProcessados.forEach(valor => {
-                totalFaturadoClinica += valor;
+            pacientesProcessados.forEach(valores => {
+                totalFaturadoClinica += valores.faturado;
+                totalPagoClinica += valores.pago;
             });
 
             // DEBUG: Log dos totais
@@ -1097,37 +1089,44 @@
             console.log('Total de registros em clinicaProcessed:', clinicaProcessed.length);
             console.log('Total de pacientes únicos:', pacientesProcessados.size);
             console.log('Total Faturado Calculado:', totalFaturadoClinica.toFixed(2));
-            console.log('Total Pago Calculado:', totalPagoLaboratorio.toFixed(2));
-            console.log('Primeiros 5 pacientes:');
-            let count = 0;
-            pacientesProcessados.forEach((valor, nome) => {
-                if (count < 5) {
-                    console.log(`  ${nome}: R$ ${valor.toFixed(2)}`);
-                    count++;
-                }
-            });
+            console.log('Total Pago Clínica Calculado:', totalPagoClinica.toFixed(2));
+            console.log('Total Pago Lab Calculado:', totalPagoLaboratorio.toFixed(2));
 
             // 3. Atualizar interface
-            const diferenca = totalFaturadoClinica - totalPagoLaboratorio;
+            const diferenca1 = totalFaturadoClinica - totalPagoClinica;
+            const diferenca2 = totalPagoClinica - totalPagoLaboratorio;
 
             document.getElementById('totalFaturado').textContent = `R$ ${totalFaturadoClinica.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('totalPagoClinica').textContent = `R$ ${totalPagoClinica.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('totalPago').textContent = `R$ ${totalPagoLaboratorio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('diferenca').textContent = `R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('diferenca1').textContent = `R$ ${Math.abs(diferenca1).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('diferenca2').textContent = `R$ ${Math.abs(diferenca2).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-            // Colorir diferença
-            const diferencaEl = document.getElementById('diferenca');
-            if (diferenca > 0) {
-                diferencaEl.classList.remove('negative');
-                diferencaEl.classList.add('positive');
-            } else if (diferenca < 0) {
-                diferencaEl.classList.remove('positive');
-                diferencaEl.classList.add('negative');
+            // Colorir diferenças
+            const diferenca1El = document.getElementById('diferenca1');
+            if (diferenca1 > 0) {
+                diferenca1El.classList.remove('negative');
+                diferenca1El.classList.add('positive');
+            } else if (diferenca1 < 0) {
+                diferenca1El.classList.remove('positive');
+                diferenca1El.classList.add('negative');
             } else {
-                diferencaEl.classList.remove('positive', 'negative');
+                diferenca1El.classList.remove('positive', 'negative');
+            }
+
+            const diferenca2El = document.getElementById('diferenca2');
+            if (diferenca2 > 0) {
+                diferenca2El.classList.remove('negative');
+                diferenca2El.classList.add('positive');
+            } else if (diferenca2 < 0) {
+                diferenca2El.classList.remove('positive');
+                diferenca2El.classList.add('negative');
+            } else {
+                diferenca2El.classList.remove('positive', 'negative');
             }
 
             // 4. Preparar dados detalhados por paciente para o Excel
-            pacientesProcessados.forEach((valorFaturado, pacienteNome) => {
+            pacientesProcessados.forEach((valores, pacienteNome) => {
                 // Buscar valores pagos pelo laboratório para esse paciente
                 const examesLab = labProcessed.filter(row => {
                     const nomeOriginal = cleanPatientName(row['Nome do Paciente'] || '');
@@ -1135,7 +1134,7 @@
                     return nomeNormalizado === normalizeText(cleanPatientName(pacienteNome));
                 });
 
-                const valorPago = examesLab.reduce((sum, row) => {
+                const valorPagoLab = examesLab.reduce((sum, row) => {
                     return sum + parseValorBR(row['Valor']);
                 }, 0);
 
@@ -1144,14 +1143,16 @@
                 financialData.push({
                     paciente: pacienteNome,
                     qtdExames: qtdExames,
-                    valorFaturado: valorFaturado,
-                    valorPago: valorPago,
-                    diferenca: valorFaturado - valorPago
+                    valorFaturado: valores.faturado,
+                    valorPagoClinica: valores.pago,
+                    valorPagoLab: valorPagoLab,
+                    diferenca1: valores.faturado - valores.pago,
+                    diferenca2: valores.pago - valorPagoLab
                 });
             });
 
-            // Ordenar por diferença (maior para menor)
-            financialData.sort((a, b) => Math.abs(b.diferenca) - Math.abs(a.diferenca));
+            // Ordenar por diferença absoluta (maior para menor)
+            financialData.sort((a, b) => Math.abs(b.diferenca1) - Math.abs(a.diferenca1));
         }
 
         function normalizeText(text) {
@@ -1597,8 +1598,8 @@ Pacientes: ${pacientesNomes}`;
                 });
                 applyStandardFormatting(ws1, clinicaHeaders.length);
 
-                const ws2 = workbook.addWorksheet('CLINICA EXPANDIDO');
-                const expandedHeaders = [...clinicaHeaders, 'Procedimento', 'Código - DB', 'Legenda'];
+                const ws2 = workbook.addWorksheet('CLINICA COM CODIGOS');
+                const expandedHeaders = [...clinicaHeaders, 'Código - DB', 'Legenda'];
                 ws2.addRow(expandedHeaders);
                 clinicaExpanded.forEach(row => {
                     ws2.addRow(expandedHeaders.map(h => row[h] || ''));
@@ -1713,30 +1714,41 @@ Pacientes: ${pacientesNomes}`;
                 totalFatRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF2E7D32' } };
                 totalFatRow.getCell(2).alignment = { horizontal: 'right' };
 
-                const totalPagoRow = ws6.addRow(['Total Pago (Laboratório)', totalPagoLaboratorio]);
-                totalPagoRow.getCell(2).numFmt = 'R$ #,##0.00';
-                totalPagoRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF1976D2' } };
-                totalPagoRow.getCell(2).alignment = { horizontal: 'right' };
+                const totalPagoClinicaRow = ws6.addRow(['Total Pago (Clínica)', totalPagoClinica]);
+                totalPagoClinicaRow.getCell(2).numFmt = 'R$ #,##0.00';
+                totalPagoClinicaRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF1976D2' } };
+                totalPagoClinicaRow.getCell(2).alignment = { horizontal: 'right' };
 
-                const diferenca = totalFaturadoClinica - totalPagoLaboratorio;
-                const difRow = ws6.addRow(['Diferença', diferenca]);
-                difRow.getCell(2).numFmt = 'R$ #,##0.00';
-                difRow.getCell(2).font = { bold: true, size: 12, color: { argb: diferenca >= 0 ? 'FF2E7D32' : 'FFC62828' } };
-                difRow.getCell(2).alignment = { horizontal: 'right' };
+                const totalPagoLabRow = ws6.addRow(['Total Pago (Laboratório)', totalPagoLaboratorio]);
+                totalPagoLabRow.getCell(2).numFmt = 'R$ #,##0.00';
+                totalPagoLabRow.getCell(2).font = { bold: true, size: 12, color: { argb: 'FF1976D2' } };
+                totalPagoLabRow.getCell(2).alignment = { horizontal: 'right' };
+
+                const diferenca1 = totalFaturadoClinica - totalPagoClinica;
+                const dif1Row = ws6.addRow(['Diferença (Faturado - Pago Clínica)', diferenca1]);
+                dif1Row.getCell(2).numFmt = 'R$ #,##0.00';
+                dif1Row.getCell(2).font = { bold: true, size: 12, color: { argb: diferenca1 >= 0 ? 'FF2E7D32' : 'FFC62828' } };
+                dif1Row.getCell(2).alignment = { horizontal: 'right' };
+
+                const diferenca2 = totalPagoClinica - totalPagoLaboratorio;
+                const dif2Row = ws6.addRow(['Diferença (Pago Clínica - Pago Lab)', diferenca2]);
+                dif2Row.getCell(2).numFmt = 'R$ #,##0.00';
+                dif2Row.getCell(2).font = { bold: true, size: 12, color: { argb: diferenca2 >= 0 ? 'FF2E7D32' : 'FFC62828' } };
+                dif2Row.getCell(2).alignment = { horizontal: 'right' };
 
                 ws6.addRow([]);
                 ws6.addRow([]);
 
                 // Seção 2: Detalhamento por Paciente
                 ws6.addRow(['DETALHAMENTO POR PACIENTE']);
-                ws6.getRow(9).font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
-                ws6.getRow(9).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
-                ws6.getRow(9).alignment = { vertical: 'middle', horizontal: 'center' };
-                ws6.mergeCells('A9:E9');
-                ws6.getRow(9).height = 25;
+                ws6.getRow(11).font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+                ws6.getRow(11).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+                ws6.getRow(11).alignment = { vertical: 'middle', horizontal: 'center' };
+                ws6.mergeCells('A11:G11');
+                ws6.getRow(11).height = 25;
 
                 ws6.addRow([]);
-                const detailHeaders = ['Paciente', 'Qtd Exames', 'Valor Faturado (Clínica)', 'Valor Pago (Lab)', 'Diferença'];
+                const detailHeaders = ['Paciente', 'Qtd Exames', 'Valor Faturado', 'Valor Pago (Clínica)', 'Valor Pago (Lab)', 'Dif (Fat-Pago Clín)', 'Dif (Pago Clín-Lab)'];
                 const headerRow6 = ws6.addRow(detailHeaders);
                 headerRow6.font = { bold: true, size: 11, color: { argb: 'FFFFFFFF' } };
                 headerRow6.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00796B' } };
@@ -1748,8 +1760,10 @@ Pacientes: ${pacientesNomes}`;
                         item.paciente,
                         item.qtdExames,
                         item.valorFaturado,
-                        item.valorPago,
-                        item.diferenca
+                        item.valorPagoClinica,
+                        item.valorPagoLab,
+                        item.diferenca1,
+                        item.diferenca2
                     ]);
 
                     // Formatação de valores
@@ -1757,12 +1771,20 @@ Pacientes: ${pacientesNomes}`;
                     detailRow.getCell(3).numFmt = 'R$ #,##0.00';
                     detailRow.getCell(4).numFmt = 'R$ #,##0.00';
                     detailRow.getCell(5).numFmt = 'R$ #,##0.00';
+                    detailRow.getCell(6).numFmt = 'R$ #,##0.00';
+                    detailRow.getCell(7).numFmt = 'R$ #,##0.00';
 
-                    // Colorir diferença
-                    if (item.diferenca > 0) {
-                        detailRow.getCell(5).font = { color: { argb: 'FF2E7D32' }, bold: true };
-                    } else if (item.diferenca < 0) {
-                        detailRow.getCell(5).font = { color: { argb: 'FFC62828' }, bold: true };
+                    // Colorir diferenças
+                    if (item.diferenca1 > 0) {
+                        detailRow.getCell(6).font = { color: { argb: 'FF2E7D32' }, bold: true };
+                    } else if (item.diferenca1 < 0) {
+                        detailRow.getCell(6).font = { color: { argb: 'FFC62828' }, bold: true };
+                    }
+
+                    if (item.diferenca2 > 0) {
+                        detailRow.getCell(7).font = { color: { argb: 'FF2E7D32' }, bold: true };
+                    } else if (item.diferenca2 < 0) {
+                        detailRow.getCell(7).font = { color: { argb: 'FFC62828' }, bold: true };
                     }
 
                     // Bordas
@@ -1774,12 +1796,14 @@ Pacientes: ${pacientesNomes}`;
                 // Ajustar larguras das colunas
                 ws6.getColumn(1).width = 50; // Paciente
                 ws6.getColumn(2).width = 15; // Qtd Exames
-                ws6.getColumn(3).width = 25; // Valor Faturado
-                ws6.getColumn(4).width = 25; // Valor Pago
-                ws6.getColumn(5).width = 20; // Diferença
+                ws6.getColumn(3).width = 20; // Valor Faturado
+                ws6.getColumn(4).width = 20; // Valor Pago Clínica
+                ws6.getColumn(5).width = 20; // Valor Pago Lab
+                ws6.getColumn(6).width = 22; // Diferença 1
+                ws6.getColumn(7).width = 22; // Diferença 2
 
                 // Congelar painéis
-                ws6.views = [{ state: 'frozen', ySplit: 11 }];
+                ws6.views = [{ state: 'frozen', ySplit: 13 }];
 
                 function applyStandardFormatting(worksheet, columnCount) {
                     const headerRow = worksheet.getRow(1);

@@ -39,7 +39,28 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
+
+        .btn-portal {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background .15s;
+        }
+
+        .btn-portal:hover { background: rgba(255,255,255,.25); }
 
         .header h1 {
             font-size: 28px;
@@ -633,6 +654,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <a href="parceiros.html" class="btn-portal">← Parceiros</a>
             <h1>Meu Médico - Comparador de Listas</h1>
             <p>Processamento de dados: Clínica nas Nuvens + Laboratório Parceiro</p>
             <div class="badge">V5 - Novo Modelo de Relatório</div>

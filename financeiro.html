@@ -1349,7 +1349,7 @@ function mostrarResultados(resultado, log) {
 
   const entradas = resultado.filter(r => r.tipo === 'Entrada');
   const saidas   = resultado.filter(r => r.tipo === 'Saída');
-  const dupls    = resultado.filter(r => r.duplicata);
+  const dupls    = resultado.filter(r => r.observacao === 'Possível duplicata');
   const sumE = entradas.reduce((s, r) => s + r.valor, 0);
   const sumS = saidas.reduce((s, r)   => s + r.valor, 0);
   const saldo = sumE - sumS;
@@ -1431,7 +1431,7 @@ function renderTabela() {
 
   if (_filtroTipo === 'entrada')   linhas = linhas.filter(r => r.tipo === 'Entrada');
   if (_filtroTipo === 'saida')     linhas = linhas.filter(r => r.tipo === 'Saída');
-  if (_filtroTipo === 'duplicata') linhas = linhas.filter(r => r.duplicata);
+  if (_filtroTipo === 'duplicata') linhas = linhas.filter(r => r.observacao === 'Possível duplicata');
 
   if (busca) {
     linhas = linhas.filter(r =>
@@ -1454,14 +1454,14 @@ function renderTabela() {
 
   for (const r of visivel) {
     const tr = document.createElement('tr');
-    if (r.duplicata) tr.className = 'row-dupl';
+    if (r.observacao === 'Possível duplicata') tr.className = 'row-dupl';
     const isE = r.tipo === 'Entrada';
     tr.innerHTML = `
       <td style="white-space:nowrap">${fmtDate(r.data)}</td>
       <td class="col-desc"><span class="td-desc-text" title="${r.descricao}">${r.descricao}</span></td>
       <td style="white-space:nowrap">${r.banco_origem}</td>
       <td>${r.forma_pagamento || '—'}</td>
-      <td><span class="badge ${isE ? 'badge-e' : 'badge-s'}">${r.tipo}</span>${r.duplicata ? ' <span class="badge badge-d">DUPL</span>' : ''}</td>
+      <td><span class="badge ${isE ? 'badge-e' : 'badge-s'}">${r.tipo}</span>${r.observacao === 'Possível duplicata' ? ' <span class="badge badge-d">DUPL</span>' : ''}</td>
       <td class="col-r ${isE ? 'val-e' : 'val-s'}">${fmtBRL(r.valor)}</td>
       <td class="col-r" style="color:var(--gray-500)">${isNaN(r.saldo) || r.saldo == null ? '—' : fmtBRL(r.saldo)}</td>
     `;
@@ -1552,10 +1552,23 @@ async function processar() {
     }
 
     const resultado  = pipeline(todos);
-    state.excelBytes = gerarExcel(resultado);
+
+    try {
+      state.excelBytes = gerarExcel(resultado);
+    } catch(e) {
+      console.error('gerarExcel falhou:', e);
+      state.excelBytes = null;
+    }
 
     mostrarResultados(resultado, log);
 
+    if (state.excelBytes) downloadExcel();
+
+  } catch(e) {
+    console.error('Erro no processamento:', e);
+    btn.textContent = '⚠ Erro inesperado — veja o console';
+    setTimeout(() => { btn.innerHTML = btnOriginal; btn.disabled = false; }, 4000);
+    return;
   } finally {
     btn.disabled = false;
     btn.innerHTML = btnOriginal;

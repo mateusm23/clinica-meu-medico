@@ -7,9 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
-  <script>if(typeof XLSXStyle==='undefined')document.write('<scr'+'ipt src="https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"><\/scr'+'ipt>')</script>
-  <script>if(typeof XLSXStyle==='undefined'&&typeof XLSX==='undefined')document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/scr'+'ipt>')</script>
+  <!-- SheetJS: leitura dos extratos XLS/XLSX -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- ExcelJS: geração do Excel formatado -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -973,18 +974,17 @@
 <script>
 // ── BIBLIOTECA ────────────────────────────────────────────────────────────────
 
-function getX() { return window.XLSXStyle || window.XLSX || null; }
+function getX() { return window.XLSX || null; }
 
 window.addEventListener('DOMContentLoaded', () => {
   const badge = document.getElementById('lib-badge');
-  const X = getX();
-  if (!X) {
+  const ok = !!getX() && typeof ExcelJS !== 'undefined';
+  if (!ok) {
     badge.textContent = '⚠ Biblioteca offline';
     badge.className = 'lib-badge err';
     document.getElementById('btn').disabled = true;
   } else {
-    const com = typeof XLSXStyle !== 'undefined';
-    badge.textContent = com ? '✓ Excel com cores' : '✓ Excel básico';
+    badge.textContent = '✓ Excel formatado';
     badge.className = 'lib-badge ok';
   }
 });
@@ -1201,189 +1201,129 @@ function pipeline(todos) {
 
 // ── GERAR EXCEL ───────────────────────────────────────────────────────────────
 
-function gerarExcel(linhas) {
-  const X   = getX();
-  const com = typeof XLSXStyle !== 'undefined';
-  const wb  = X.utils.book_new();
-  const ws  = {};
+async function gerarExcel(linhas) {
+  const wb  = new ExcelJS.Workbook();
+  wb.creator = 'Clínica Meu Médico';
+  const ws  = wb.addWorksheet('Conciliação', {
+    properties: { tabColor: { argb: 'FF1B6B5A' } },
+  });
   const NC  = COLUNAS.length;
-
-  // Formato: positivo normal, negativo em vermelho com sinal -
   const FMT_VALOR = '"R$ "#,##0.00;[Red]-"R$ "#,##0.00';
-  const FMT_DATA  = 'DD/MM/YYYY';
 
-  // ── Helpers de borda ─────────────────────────────────────────────────────
-  function lado(style, rgb) { return {style, color:{rgb}}; }
-  function brd(style, rgb)  {
-    const s = lado(style, rgb);
-    return {top:s, bottom:s, left:s, right:s};
+  const a   = hex => 'FF' + hex;
+  const fill = hex => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: a(hex) } });
+  const fnt  = (hex, sz, bold) => ({ name: 'Calibri', size: sz, bold: !!bold, color: { argb: a(hex) } });
+  const brd  = (style, hex) => { const s = { style, color: { argb: a(hex) } }; return { top:s, bottom:s, left:s, right:s }; };
+
+  const bGreen = brd('medium', '0D5E4A');
+  const bGray  = brd('thin',   'C5D8D4');
+  const bDark  = brd('medium', '0A2E22');
+
+  function styleCell(c, fillHex, fontHex, fontSz, bold, al, border, numFmt) {
+    c.fill      = fill(fillHex);
+    c.font      = fnt(fontHex, fontSz, bold);
+    c.alignment = { horizontal: al, vertical: 'middle', wrapText: false };
+    c.border    = border;
+    if (numFmt) c.numFmt = numFmt;
   }
-  const bMedGreen = brd('medium', '0D5E4A');
-  const bThinGray = brd('thin',   'C5D8D4');
-  const bMedDark  = brd('medium', '0A2E22');
 
-  function mkCell(v, t, s, fmt) {
-    const c = {v: v ?? '', t};
-    if (fmt) c.z = fmt;
-    if (com && s) {
-      c.s = fmt ? {...s, numFmt: fmt} : s;
+  function fillRowStyle(ri, fillHex, fontHex, fontSz, bold, border) {
+    for (let ci = 1; ci <= NC; ci++) {
+      styleCell(ws.getCell(ri, ci), fillHex, fontHex, fontSz, bold, 'center', border);
     }
-    return c;
   }
 
-  function cell(r, c, v, t, s, fmt) {
-    ws[X.utils.encode_cell({r, c})] = mkCell(v, t, s, fmt);
-  }
+  ws.columns = COLUNAS.map(({ wch }) => ({ width: wch }));
 
-  function fillRow(r, s) {
-    for (let c = 0; c < NC; c++) cell(r, c, '', 's', s);
-  }
-
-  // ── Estilos base ─────────────────────────────────────────────────────────
-  const sTitle = com ? {
-    fill:      {patternType:'solid', fgColor:{rgb:'0D3B2E'}},
-    font:      {bold:true, color:{rgb:'FFFFFF'}, name:'Calibri', sz:14},
-    alignment: {horizontal:'center', vertical:'center'},
-    border:    bMedGreen,
-  } : null;
-
-  const sPeriod = com ? {
-    fill:      {patternType:'solid', fgColor:{rgb:'1B6B5A'}},
-    font:      {color:{rgb:'D1FAE5'}, name:'Calibri', sz:10},
-    alignment: {horizontal:'center', vertical:'center'},
-    border:    bMedGreen,
-  } : null;
-
-  const sHeader = com ? {
-    fill:      {patternType:'solid', fgColor:{rgb:'227A67'}},
-    font:      {bold:true, color:{rgb:'FFFFFF'}, name:'Calibri', sz:10},
-    alignment: {horizontal:'center', vertical:'center'},
-    border:    bMedGreen,
-  } : null;
-
-  function sData(bgHex, al) {
-    return com ? {
-      fill:      {patternType:'solid', fgColor:{rgb:bgHex}},
-      font:      {name:'Calibri', sz:10},
-      alignment: {horizontal:al, vertical:'center'},
-      border:    bThinGray,
-    } : null;
-  }
-
-  function sTotal(bgHex, al) {
-    return com ? {
-      fill:      {patternType:'solid', fgColor:{rgb:bgHex}},
-      font:      {bold:true, color:{rgb:'FFFFFF'}, name:'Calibri', sz:11},
-      alignment: {horizontal:al, vertical:'center'},
-      border:    bMedDark,
-    } : null;
-  }
-
-  // ── ROW 0: Título (mesclado) ──────────────────────────────────────────────
-  fillRow(0, sTitle);
-  cell(0, 0, 'CONCILIAÇÃO BANCÁRIA — CLÍNICA MEU MÉDICO', 's', sTitle);
-
-  // ── ROW 1: Período (mesclado) ─────────────────────────────────────────────
-  const datas = linhas.map(r => r.data).filter(Boolean);
-  const dMin  = fmtDate(new Date(Math.min(...datas)));
-  const dMax  = fmtDate(new Date(Math.max(...datas)));
+  const datas   = linhas.map(r => r.data).filter(Boolean);
+  const dMin    = fmtDate(new Date(Math.min(...datas)));
+  const dMax    = fmtDate(new Date(Math.max(...datas)));
   const entradas = linhas.filter(r => r.tipo === 'Entrada');
   const saidas   = linhas.filter(r => r.tipo === 'Saída');
-  const sumEnt   = entradas.reduce((s,r) => s + (isNaN(r.valor)?0:r.valor), 0);
-  const sumSai   = saidas.reduce((s,r)   => s + (isNaN(r.valor)?0:r.valor), 0);
+  const sumEnt   = entradas.reduce((s, r) => s + (isNaN(r.valor) ? 0 : r.valor), 0);
+  const sumSai   = saidas.reduce((s, r)   => s + (isNaN(r.valor) ? 0 : r.valor), 0);
   const saldoLiq = sumEnt - sumSai;
+  const fBRL     = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  fillRow(1, sPeriod);
-  cell(1, 0,
-    `Período: ${dMin} a ${dMax}   |   ${linhas.length} lançamentos   |   Entradas: R$ ${sumEnt.toLocaleString('pt-BR',{minimumFractionDigits:2})}   |   Saídas: R$ ${sumSai.toLocaleString('pt-BR',{minimumFractionDigits:2})}   |   Saldo: R$ ${saldoLiq.toLocaleString('pt-BR',{minimumFractionDigits:2})}`,
-    's', sPeriod);
+  // ROW 1: Título
+  ws.getRow(1).height = 30;
+  ws.mergeCells(1, 1, 1, NC);
+  const cTitle = ws.getCell(1, 1);
+  cTitle.value = 'CONCILIAÇÃO BANCÁRIA — CLÍNICA MEU MÉDICO';
+  styleCell(cTitle, '0D3B2E', 'FFFFFF', 14, true, 'center', bGreen);
 
-  // ── ROW 2: Cabeçalho das colunas ─────────────────────────────────────────
-  COLUNAS.forEach(({nome}, c) => {
-    ws[X.utils.encode_cell({r:2, c})] = mkCell(nome, 's', sHeader);
+  // ROW 2: Período
+  ws.getRow(2).height = 18;
+  ws.mergeCells(2, 1, 2, NC);
+  const cPer = ws.getCell(2, 1);
+  cPer.value = `Período: ${dMin} a ${dMax}   |   ${linhas.length} lançamentos   |   Entradas: ${fBRL(sumEnt)}   |   Saídas: ${fBRL(sumSai)}   |   Saldo: ${fBRL(saldoLiq)}`;
+  styleCell(cPer, '1B6B5A', 'D1FAE5', 10, false, 'center', bGreen);
+
+  // ROW 3: Cabeçalho
+  ws.getRow(3).height = 24;
+  COLUNAS.forEach(({ nome }, ci) => {
+    const c = ws.getCell(3, ci + 1);
+    c.value = nome;
+    styleCell(c, '227A67', 'FFFFFF', 10, true, 'center', bGreen);
   });
 
-  // ── ROWS 3+: Dados ────────────────────────────────────────────────────────
+  // ROWS 4+: Dados
   linhas.forEach((row, idx) => {
-    const r       = 3 + idx;
-    const isEnt   = row.tipo === 'Entrada';
-    const isOdd   = idx % 2 === 1;
-    const bgEnt   = isOdd ? 'F0FAF8' : 'FFFFFF';
-    const bgSai   = isOdd ? 'FEF2F2' : 'FFF8F8';
-    const bg      = isEnt ? bgEnt : bgSai;
+    const ri    = 4 + idx;
+    const isEnt = row.tipo === 'Entrada';
+    const isOdd = idx % 2 === 1;
+    const bg    = isEnt ? (isOdd ? 'F0FAF8' : 'FFFFFF') : (isOdd ? 'FEF2F2' : 'FFF8F8');
+    ws.getRow(ri).height = 18;
 
-    const dateSerial = row.data
-      ? Math.floor(row.data.getTime() / 86400000 + 25569)
-      : null;
-
-    // Saída → valor negativo
-    const valorNum = (row.valor == null || isNaN(row.valor)) ? null
-                   : (isEnt ? row.valor : -row.valor);
+    const valorNum = (row.valor == null || isNaN(row.valor)) ? null : (isEnt ? row.valor : -row.valor);
     const saldoNum = (row.saldo == null || isNaN(row.saldo)) ? null : row.saldo;
 
     const defs = [
-      [dateSerial,              'n', 'center', FMT_DATA],
-      [row.descricao,           's', 'left',   null],
-      [row.tipo,                's', 'center', null],
-      [valorNum,                'n', 'right',  FMT_VALOR],
-      [saldoNum,                'n', 'right',  FMT_VALOR],
-      [row.banco_origem,        's', 'left',   null],
-      [row.forma_pagamento||'', 's', 'left',   null],
-      [row.categoria||'',       's', 'left',   null],
-      [row.apuracao||'',        's', 'left',   null],
-      [row.observacao||'',      's', 'left',   null],
+      [row.data,                'center', 'DD/MM/YYYY'],
+      [row.descricao,           'left',   null],
+      [row.tipo,                'center', null],
+      [valorNum,                'right',  FMT_VALOR],
+      [saldoNum,                'right',  FMT_VALOR],
+      [row.banco_origem,        'left',   null],
+      [row.forma_pagamento||'', 'left',   null],
+      [row.categoria||'',       'left',   null],
+      [row.apuracao||'',        'left',   null],
+      [row.observacao||'',      'left',   null],
     ];
 
-    defs.forEach(([v, t, al, fmt], c) => {
-      const s = sData(bg, al);
-      if (v === null && t === 'n') {
-        cell(r, c, '', 's', sData(bg, al));
-      } else {
-        cell(r, c, v, t, s, fmt);
-      }
+    defs.forEach(([v, al, fmt], ci) => {
+      const c = ws.getCell(ri, ci + 1);
+      c.value = v ?? null;
+      styleCell(c, bg, '111827', 10, false, al, bGray, fmt);
     });
   });
 
-  // ── Linha em branco ───────────────────────────────────────────────────────
-  const blankR  = 3 + linhas.length;
-  const baseT   = blankR + 1;
-
-  // ── Totais ────────────────────────────────────────────────────────────────
+  // Totais
+  const baseT = 4 + linhas.length + 1;
   const totalDefs = [
     { label: `TOTAL ENTRADAS  —  ${entradas.length} lançamentos`, valor: sumEnt,   bg: '166534' },
     { label: `TOTAL SAÍDAS  —  ${saidas.length} lançamentos`,     valor: sumSai,   bg: '991B1B' },
     { label: `SALDO LÍQUIDO DO PERÍODO`,                            valor: saldoLiq, bg: saldoLiq >= 0 ? '14532D' : '7F1D1D' },
   ];
 
-  totalDefs.forEach(({label, valor, bg}, i) => {
-    const r = baseT + i;
-    fillRow(r, sTotal(bg, 'center'));
-    cell(r, 1, label, 's', sTotal(bg, 'right'));
-    cell(r, 3, valor, 'n', sTotal(bg, 'right'), FMT_VALOR);
+  totalDefs.forEach(({ label, valor, bg }, i) => {
+    const ri = baseT + i;
+    ws.getRow(ri).height = 22;
+    fillRowStyle(ri, bg, 'FFFFFF', 11, true, bDark);
+    const lc = ws.getCell(ri, 2);
+    lc.value     = label;
+    lc.alignment = { horizontal: 'right', vertical: 'middle' };
+    const vc = ws.getCell(ri, 4);
+    vc.value  = valor;
+    vc.numFmt = FMT_VALOR;
+    vc.alignment = { horizontal: 'right', vertical: 'middle' };
   });
 
-  // ── Metadados ─────────────────────────────────────────────────────────────
-  const lastRow = baseT + totalDefs.length - 1;
+  ws.views      = [{ state: 'frozen', ySplit: 3, topLeftCell: 'A4' }];
+  ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: NC } };
 
-  ws['!ref']     = X.utils.encode_range({s:{r:0,c:0}, e:{r:lastRow, c:NC-1}});
-  ws['!cols']    = COLUNAS.map(({wch}) => ({wch}));
-  ws['!merges']  = [
-    {s:{r:0,c:0}, e:{r:0,c:NC-1}},
-    {s:{r:1,c:0}, e:{r:1,c:NC-1}},
-  ];
-  ws['!rows'] = [
-    {hpt:30},
-    {hpt:18},
-    {hpt:24},
-    ...Array(linhas.length).fill({hpt:18}),
-    {hpt:6},
-    {hpt:22}, {hpt:22}, {hpt:22},
-  ];
-  ws['!autofilter'] = {ref: X.utils.encode_range({s:{r:2,c:0}, e:{r:2,c:NC-1}})};
-  ws['!views'] = [{state:'frozen', xSplit:0, ySplit:3, topLeftCell:'A4', activeCell:'A4', sqref:'A4'}];
-
-  X.utils.book_append_sheet(wb, ws, 'Conciliação');
-  return X.write(wb, {bookType:'xlsx', type:'array', cellStyles:com});
+  const buffer = await wb.xlsx.writeBuffer();
+  return buffer;
 }
 
 // ── DOWNLOAD ──────────────────────────────────────────────────────────────────
@@ -1618,7 +1558,7 @@ async function processar() {
     const resultado  = pipeline(todos);
 
     try {
-      state.excelBytes = gerarExcel(resultado);
+      state.excelBytes = await gerarExcel(resultado);
     } catch(e) {
       console.error('gerarExcel falhou:', e);
       state.excelBytes = null;

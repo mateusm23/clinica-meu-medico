@@ -418,50 +418,239 @@
 
     .results-panel.visible { display: block; }
 
-    /* Stat cards */
-    .stats-grid {
+    /* ── KPI GRID ── */
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
       gap: 12px;
       margin-bottom: 20px;
     }
 
-    @media (max-width: 560px) {
-      .stats-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 800px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
 
-    .stat-card {
+    .kpi-card {
       background: var(--white);
       border-radius: var(--radius-md);
-      padding: 18px 20px;
+      padding: 20px 22px;
       box-shadow: var(--shadow-sm);
-      border-top: 3px solid var(--green-700);
+      border-top: 3px solid var(--gray-300);
     }
 
-    .stat-card.entrada-card { border-top-color: #22A06B; }
-    .stat-card.saida-card   { border-top-color: #E04040; }
+    .kpi-card.kpi-saldo {
+      border-top-color: var(--green-700);
+      background: var(--green-900);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--gray-500);
-      text-transform: uppercase;
-      letter-spacing: .5px;
+    .kpi-card.kpi-entrada { border-top-color: #22A06B; }
+    .kpi-card.kpi-saida   { border-top-color: #E04040; }
+    .kpi-card.kpi-total   { border-top-color: var(--green-400); }
+
+    .kpi-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .5px;
       margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--gray-900);
-      letter-spacing: -.5px;
-    }
-
-    .stat-sub {
-      font-size: 12px;
       color: var(--gray-500);
-      margin-top: 3px;
     }
+
+    .kpi-saldo .kpi-label { color: rgba(255,255,255,.55); }
+
+    .kpi-value {
+      font-size: 22px; font-weight: 700;
+      color: var(--gray-900); letter-spacing: -.5px;
+      line-height: 1.2;
+    }
+
+    .kpi-saldo .kpi-value {
+      font-size: 28px;
+      color: var(--white);
+    }
+
+    .kpi-value.positivo { color: #22A06B; }
+    .kpi-value.negativo { color: #E04040; }
+
+    .kpi-sub {
+      font-size: 12px; color: var(--gray-500); margin-top: 4px;
+    }
+
+    .kpi-saldo .kpi-sub { color: rgba(255,255,255,.45); }
+
+    /* ── BANCO GRID ── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 24px 0 12px;
+    }
+
+    .section-title {
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .8px;
+      color: var(--gray-500);
+    }
+
+    .banco-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .banco-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--green-400);
+    }
+
+    .banco-card-name {
+      font-size: 13px; font-weight: 700;
+      color: var(--gray-900); margin-bottom: 10px;
+    }
+
+    .banco-card-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+
+    .banco-card-row span:last-child { font-weight: 600; color: var(--gray-900); }
+    .banco-card-row .val-e { color: #22A06B; font-weight: 600; }
+    .banco-card-row .val-s { color: #E04040; font-weight: 600; }
+
+    /* ── TABLE CONTROLS ── */
+    .table-controls {
+      display: flex; gap: 10px; align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .search-input {
+      flex: 1; min-width: 200px;
+      height: 36px; padding: 0 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; color: var(--gray-900);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .search-input:focus { border-color: var(--green-400); }
+
+    .filter-pills {
+      display: flex; gap: 6px;
+    }
+
+    .pill {
+      height: 36px; padding: 0 14px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .pill:hover { border-color: var(--green-400); color: var(--green-700); }
+    .pill.active { background: var(--green-900); border-color: var(--green-900); color: var(--white); }
+    .pill.p-entrada.active { background: #22A06B; border-color: #22A06B; color: var(--white); }
+    .pill.p-saida.active   { background: #E04040; border-color: #E04040; color: var(--white); }
+    .pill.p-dupl.active    { background: #B45309; border-color: #B45309; color: var(--white); }
+
+    .table-count {
+      font-size: 12px; color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+
+    /* ── TRANSACTIONS TABLE ── */
+    .table-wrap {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .lancamentos-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .lancamentos-table thead th {
+      position: sticky; top: 0; z-index: 1;
+      background: var(--green-900);
+      color: rgba(255,255,255,.85);
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .5px;
+      padding: 10px 14px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .lancamentos-table thead th.col-r { text-align: right; }
+
+    .lancamentos-table tbody tr {
+      border-bottom: 1px solid var(--gray-100);
+      transition: background .1s;
+    }
+
+    .lancamentos-table tbody tr:last-child { border-bottom: none; }
+    .lancamentos-table tbody tr:hover { background: var(--green-50); }
+    .lancamentos-table tbody tr.row-dupl { background: #FFFBEB; }
+    .lancamentos-table tbody tr.row-dupl:hover { background: #FEF3C7; }
+
+    .lancamentos-table td {
+      padding: 9px 14px;
+      color: var(--gray-700);
+      vertical-align: middle;
+    }
+
+    .lancamentos-table td.col-r { text-align: right; font-variant-numeric: tabular-nums; }
+    .lancamentos-table td.col-desc { max-width: 280px; }
+
+    .td-desc-text {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 260px; display: block;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      letter-spacing: .3px;
+    }
+
+    .badge-e { background: #DCFCE7; color: #166534; }
+    .badge-s { background: #FEE2E2; color: #991B1B; }
+    .badge-d { background: #FEF3C7; color: #92400E; font-size: 9px; padding: 2px 6px; }
+
+    .val-e { color: #166534; font-weight: 600; }
+    .val-s { color: #991B1B; font-weight: 600; }
+
+    .btn-ver-mais {
+      display: block; width: 100%;
+      padding: 12px;
+      background: var(--gray-100); border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 600; color: var(--gray-700);
+      cursor: pointer; transition: background .15s;
+      margin-bottom: 24px;
+    }
+
+    .btn-ver-mais:hover { background: var(--gray-300); }
 
     /* Log de arquivos */
     .file-log {
@@ -475,16 +664,12 @@
     .file-log-header {
       padding: 14px 20px;
       border-bottom: 1px solid var(--gray-100);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-700);
+      font-size: 13px; font-weight: 600; color: var(--gray-700);
     }
 
     .file-log-row {
-      display: flex;
-      align-items: center;
-      padding: 12px 20px;
-      gap: 12px;
+      display: flex; align-items: center;
+      padding: 12px 20px; gap: 12px;
       border-bottom: 1px solid var(--gray-100);
       font-size: 13px;
     }
@@ -492,10 +677,8 @@
     .file-log-row:last-child { border-bottom: none; }
 
     .log-status {
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
     .log-status.ok  { background: #DCFCE7; color: #16A34A; }
@@ -507,27 +690,17 @@
 
     /* Download button */
     .btn-download {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 15px;
-      background: white;
-      color: var(--green-700);
-      border: 2px solid var(--green-700);
-      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; width: 100%; padding: 15px;
+      background: var(--green-900); color: white;
+      border: none; border-radius: var(--radius-md);
       font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+      margin-top: 8px;
     }
 
-    .btn-download:hover {
-      background: var(--green-700);
-      color: white;
-    }
+    .btn-download:hover { background: var(--green-700); }
 
     /* Spinner */
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -710,37 +883,86 @@
   <!-- ── RESULTS ──────────────────────────────────────────────────────── -->
   <div class="results-panel" id="results">
 
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total de Lançamentos</div>
-        <div class="stat-value" id="stat-total">—</div>
-        <div class="stat-sub" id="stat-period">—</div>
+    <!-- KPIs principais -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-saldo">
+        <div class="kpi-label">Saldo Líquido do Período</div>
+        <div class="kpi-value" id="kpi-saldo">—</div>
+        <div class="kpi-sub" id="kpi-periodo">—</div>
       </div>
-      <div class="stat-card entrada-card">
-        <div class="stat-label">Total Entradas</div>
-        <div class="stat-value" id="stat-entrada">—</div>
-        <div class="stat-sub" id="stat-entrada-n">—</div>
+      <div class="kpi-card kpi-entrada">
+        <div class="kpi-label">Total Entradas</div>
+        <div class="kpi-value" id="kpi-entradas">—</div>
+        <div class="kpi-sub" id="kpi-entradas-n">—</div>
       </div>
-      <div class="stat-card saida-card">
-        <div class="stat-label">Total Saídas</div>
-        <div class="stat-value" id="stat-saida">—</div>
-        <div class="stat-sub" id="stat-saida-n">—</div>
+      <div class="kpi-card kpi-saida">
+        <div class="kpi-label">Total Saídas</div>
+        <div class="kpi-value" id="kpi-saidas">—</div>
+        <div class="kpi-sub" id="kpi-saidas-n">—</div>
+      </div>
+      <div class="kpi-card kpi-total">
+        <div class="kpi-label">Lançamentos</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub" id="kpi-dupl">—</div>
       </div>
     </div>
 
-    <!-- File log -->
-    <div class="file-log">
-      <div class="file-log-header">Resumo por Arquivo</div>
+    <!-- Breakdown por banco -->
+    <div class="section-header">
+      <div class="section-title">Resumo por Banco</div>
+    </div>
+    <div class="banco-grid" id="banco-grid"></div>
+
+    <!-- Log de arquivos com erros -->
+    <div class="file-log" id="file-log" style="display:none">
+      <div class="file-log-header">Avisos de Processamento</div>
       <div id="file-log-rows"></div>
     </div>
+
+    <!-- Tabela de lançamentos -->
+    <div class="section-header">
+      <div class="section-title">Lançamentos</div>
+    </div>
+    <div class="table-controls">
+      <input type="text" class="search-input" id="search-input"
+             placeholder="Buscar por descrição ou banco…"
+             oninput="filtrarTabela()">
+      <div class="filter-pills">
+        <button class="pill active"    id="pill-todos"   onclick="setPill('todos')">Todos</button>
+        <button class="pill p-entrada" id="pill-entrada" onclick="setPill('entrada')">Entradas</button>
+        <button class="pill p-saida"   id="pill-saida"   onclick="setPill('saida')">Saídas</button>
+        <button class="pill p-dupl"    id="pill-dupl"    onclick="setPill('duplicata')">Duplicatas</button>
+      </div>
+    </div>
+    <div class="table-count" id="table-count"></div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="lancamentos-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Banco</th>
+              <th>Forma Pgto.</th>
+              <th>Tipo</th>
+              <th class="col-r">Valor (R$)</th>
+              <th class="col-r">Saldo (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <button class="btn-ver-mais" id="btn-ver-mais" onclick="verMais()" style="display:none">
+      Ver mais lançamentos…
+    </button>
 
     <!-- Download -->
     <button class="btn-download" id="btn-download" onclick="downloadExcel()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
       </svg>
-      Baixar Planilha — conciliacao_bancaria.xlsx
+      Baixar Planilha Excel — conciliacao_bancaria.xlsx
     </button>
 
   </div><!-- /results -->
@@ -1115,69 +1337,192 @@ function downloadExcel() {
 
 // ── RESULTS UI ────────────────────────────────────────────────────────────────
 
-function mostrarResultados(resultado, log) {
-  const entradas = resultado.filter(r=>r.tipo==='Entrada');
-  const saidas   = resultado.filter(r=>r.tipo==='Saída');
-  const sumE = entradas.reduce((s,r)=>s+r.valor,0);
-  const sumS = saidas.reduce((s,r)=>s+r.valor,0);
+const PAGE_SIZE = 60;
+let _filtroTipo = 'todos';
+let _filtroPage = PAGE_SIZE;
+let _resultado  = [];
 
-  const datas = resultado.map(r=>r.data).filter(Boolean);
+function mostrarResultados(resultado, log) {
+  _resultado  = resultado;
+  _filtroTipo = 'todos';
+  _filtroPage = PAGE_SIZE;
+
+  const entradas = resultado.filter(r => r.tipo === 'Entrada');
+  const saidas   = resultado.filter(r => r.tipo === 'Saída');
+  const dupls    = resultado.filter(r => r.duplicata);
+  const sumE = entradas.reduce((s, r) => s + r.valor, 0);
+  const sumS = saidas.reduce((s, r)   => s + r.valor, 0);
+  const saldo = sumE - sumS;
+
+  const datas = resultado.map(r => r.data).filter(Boolean);
   const dMin  = fmtDate(new Date(Math.min(...datas)));
   const dMax  = fmtDate(new Date(Math.max(...datas)));
 
-  document.getElementById('stat-total').textContent   = resultado.length.toLocaleString('pt-BR');
-  document.getElementById('stat-period').textContent  = dMin + ' até ' + dMax;
-  document.getElementById('stat-entrada').textContent = fmtBRL(sumE);
-  document.getElementById('stat-entrada-n').textContent = entradas.length + ' transações';
-  document.getElementById('stat-saida').textContent   = fmtBRL(sumS);
-  document.getElementById('stat-saida-n').textContent = saidas.length + ' transações';
+  // KPIs
+  const elSaldo = document.getElementById('kpi-saldo');
+  elSaldo.textContent = fmtBRL(saldo);
+  elSaldo.className   = 'kpi-value ' + (saldo >= 0 ? 'positivo' : 'negativo');
+  document.getElementById('kpi-periodo').textContent    = dMin + ' até ' + dMax;
+  document.getElementById('kpi-entradas').textContent   = fmtBRL(sumE);
+  document.getElementById('kpi-entradas-n').textContent = entradas.length.toLocaleString('pt-BR') + ' transações';
+  document.getElementById('kpi-saidas').textContent     = fmtBRL(sumS);
+  document.getElementById('kpi-saidas-n').textContent   = saidas.length.toLocaleString('pt-BR') + ' transações';
+  document.getElementById('kpi-total').textContent      = resultado.length.toLocaleString('pt-BR');
+  document.getElementById('kpi-dupl').textContent       = dupls.length
+    ? dupls.length + ' possíveis duplicatas'
+    : 'sem duplicatas';
 
-  const logWrap = document.getElementById('file-log-rows');
-  logWrap.innerHTML = '';
-  for (const {banco, count, err} of log) {
-    const row = document.createElement('div');
-    row.className = 'file-log-row';
-    if (err) {
+  // Breakdown por banco
+  const bancos = [...new Set(resultado.map(r => r.banco_origem))];
+  const grid = document.getElementById('banco-grid');
+  grid.innerHTML = '';
+  for (const banco of bancos) {
+    const rows = resultado.filter(r => r.banco_origem === banco);
+    const bE   = rows.filter(r => r.tipo === 'Entrada').reduce((s, r) => s + r.valor, 0);
+    const bS   = rows.filter(r => r.tipo === 'Saída').reduce((s, r)   => s + r.valor, 0);
+    const card = document.createElement('div');
+    card.className = 'banco-card';
+    card.innerHTML = `
+      <div class="banco-card-name">${banco}</div>
+      <div class="banco-card-row"><span>Lançamentos</span><span>${rows.length}</span></div>
+      <div class="banco-card-row"><span>Entradas</span><span class="val-e">${fmtBRL(bE)}</span></div>
+      <div class="banco-card-row"><span>Saídas</span><span class="val-s">${fmtBRL(bS)}</span></div>
+    `;
+    grid.appendChild(card);
+  }
+
+  // Log de erros (só mostra se houver algum erro)
+  const erros = log.filter(l => l.err);
+  const fileLog = document.getElementById('file-log');
+  if (erros.length) {
+    fileLog.style.display = '';
+    const logWrap = document.getElementById('file-log-rows');
+    logWrap.innerHTML = '';
+    for (const {banco, err} of erros) {
+      const row = document.createElement('div');
+      row.className = 'file-log-row';
       row.innerHTML = `
         <div class="log-status err"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
         <span class="log-banco">${banco}</span>
         <span class="log-msg">${err}</span>`;
-    } else {
-      row.innerHTML = `
-        <div class="log-status ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
-        <span class="log-banco">${banco}</span>
-        <span style="font-size:13px;color:#374151">${count} lançamentos</span>
-        <span class="log-count">${resultado.filter(r=>r.banco_origem===banco).length > 0 ? '' : ''}</span>`;
+      logWrap.appendChild(row);
     }
-    logWrap.appendChild(row);
+  } else {
+    fileLog.style.display = 'none';
   }
+
+  // Reset pills
+  ['todos','entrada','saida','duplicata'].forEach(p => {
+    document.getElementById('pill-' + p).classList.remove('active');
+  });
+  document.getElementById('pill-todos').classList.add('active');
+  document.getElementById('search-input').value = '';
+
+  renderTabela();
 
   document.getElementById('results').classList.add('visible');
   document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderTabela() {
+  const busca = (document.getElementById('search-input').value || '').trim().toLowerCase();
+
+  let linhas = _resultado;
+
+  if (_filtroTipo === 'entrada')   linhas = linhas.filter(r => r.tipo === 'Entrada');
+  if (_filtroTipo === 'saida')     linhas = linhas.filter(r => r.tipo === 'Saída');
+  if (_filtroTipo === 'duplicata') linhas = linhas.filter(r => r.duplicata);
+
+  if (busca) {
+    linhas = linhas.filter(r =>
+      r.descricao.toLowerCase().includes(busca) ||
+      r.banco_origem.toLowerCase().includes(busca) ||
+      (r.forma_pagamento || '').toLowerCase().includes(busca)
+    );
+  }
+
+  const total   = linhas.length;
+  const visivel = linhas.slice(0, _filtroPage);
+
+  document.getElementById('table-count').textContent =
+    total === _resultado.length
+      ? `${total.toLocaleString('pt-BR')} lançamentos`
+      : `${total.toLocaleString('pt-BR')} de ${_resultado.length.toLocaleString('pt-BR')} lançamentos`;
+
+  const tbody = document.getElementById('tabela-body');
+  tbody.innerHTML = '';
+
+  for (const r of visivel) {
+    const tr = document.createElement('tr');
+    if (r.duplicata) tr.className = 'row-dupl';
+    const isE = r.tipo === 'Entrada';
+    tr.innerHTML = `
+      <td style="white-space:nowrap">${fmtDate(r.data)}</td>
+      <td class="col-desc"><span class="td-desc-text" title="${r.descricao}">${r.descricao}</span></td>
+      <td style="white-space:nowrap">${r.banco_origem}</td>
+      <td>${r.forma_pagamento || '—'}</td>
+      <td><span class="badge ${isE ? 'badge-e' : 'badge-s'}">${r.tipo}</span>${r.duplicata ? ' <span class="badge badge-d">DUPL</span>' : ''}</td>
+      <td class="col-r ${isE ? 'val-e' : 'val-s'}">${fmtBRL(r.valor)}</td>
+      <td class="col-r" style="color:var(--gray-500)">${isNaN(r.saldo) || r.saldo == null ? '—' : fmtBRL(r.saldo)}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  const btnMais = document.getElementById('btn-ver-mais');
+  if (total > _filtroPage) {
+    btnMais.style.display = '';
+    btnMais.textContent = `Ver mais lançamentos… (${total - _filtroPage} restantes)`;
+  } else {
+    btnMais.style.display = 'none';
+  }
+}
+
+function filtrarTabela() {
+  _filtroPage = PAGE_SIZE;
+  renderTabela();
+}
+
+function setPill(tipo) {
+  _filtroTipo = tipo;
+  _filtroPage = PAGE_SIZE;
+  ['todos','entrada','saida','duplicata'].forEach(p => {
+    document.getElementById('pill-' + p).classList.remove('active');
+  });
+  document.getElementById('pill-' + tipo).classList.add('active');
+  renderTabela();
+}
+
+function verMais() {
+  _filtroPage += PAGE_SIZE;
+  renderTabela();
 }
 
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 
 async function processar() {
   const btn = document.getElementById('btn');
+  const btnOriginal = btn.innerHTML;
 
   const slots = [1,2,3].map(n => ({
     n, file: state.files[n], banco: document.getElementById('banco'+n).value
   })).filter(s => s.file);
 
   if (!slots.length) {
-    alert('Selecione ao menos um arquivo de extrato.');
+    btn.textContent = '⚠ Selecione ao menos um arquivo';
+    setTimeout(() => { btn.innerHTML = btnOriginal; }, 2500);
     return;
   }
 
   const semBanco = slots.filter(s => !s.banco);
   if (semBanco.length) {
-    alert('Selecione o banco para todos os arquivos carregados.');
+    btn.textContent = '⚠ Selecione o banco para cada arquivo';
+    setTimeout(() => { btn.innerHTML = btnOriginal; }, 2500);
     return;
   }
 
   if (!getX()) {
-    alert('Biblioteca não carregada. Verifique sua conexão e recarregue a página.');
+    btn.textContent = '⚠ Biblioteca offline — recarregue a página';
+    setTimeout(() => { btn.innerHTML = btnOriginal; }, 3000);
     return;
   }
 
@@ -1201,23 +1546,19 @@ async function processar() {
     }
 
     if (!todos.length) {
-      alert('Nenhum dado válido foi processado. Verifique os arquivos e os bancos selecionados.');
+      btn.textContent = '⚠ Nenhum dado válido — verifique os arquivos';
+      setTimeout(() => { btn.innerHTML = btnOriginal; btn.disabled = false; }, 3500);
       return;
     }
 
-    const resultado   = pipeline(todos);
-    state.excelBytes  = gerarExcel(resultado);
+    const resultado  = pipeline(todos);
+    state.excelBytes = gerarExcel(resultado);
 
     mostrarResultados(resultado, log);
-    downloadExcel();
 
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z" fill="white"/>
-      </svg>
-      Processar e Gerar Planilha Excel`;
+    btn.innerHTML = btnOriginal;
   }
 }
 

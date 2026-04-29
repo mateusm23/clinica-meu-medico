@@ -6,717 +6,192 @@
   <title>Módulo Financeiro — Clínica Meu Médico</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- SheetJS: leitura dos extratos XLS/XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- ExcelJS: geração do Excel formatado -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-
   <style>
     :root {
-      --green-900: #0D3B2E;
-      --green-700: #1B6B5A;
-      --green-600: #227A67;
-      --green-400: #4BA58E;
-      --green-100: #E6F4F1;
-      --green-50:  #F2FAF8;
-      --gray-900:  #111827;
-      --gray-700:  #374151;
-      --gray-500:  #6B7280;
-      --gray-300:  #D1D5DB;
-      --gray-100:  #F3F4F6;
-      --red-100:   #FEE2E2;
-      --red-600:   #DC2626;
-      --white:     #FFFFFF;
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-      --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #EDF3F1;
-      color: var(--gray-900);
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    header {
-      background: var(--green-900);
-      height: 62px;
-      display: flex;
-      align-items: center;
-      padding: 0 32px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
-
-    .brand-icon {
-      width: 36px; height: 36px;
-      background: var(--green-700);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .brand-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--white);
-      letter-spacing: -.2px;
-    }
-
-    .brand-divider {
-      width: 1px; height: 28px;
-      background: rgba(255,255,255,.15);
-      margin: 0 16px;
-    }
-
-    .brand-module {
-      font-size: 13px;
-      font-weight: 500;
-      color: rgba(255,255,255,.55);
-      letter-spacing: .1px;
-    }
-
-    .btn-portal {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      color: rgba(255,255,255,.75);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background .15s, color .15s;
-    }
-    .btn-portal:hover { background: rgba(255,255,255,.2); color: #fff; }
-
-    .header-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .lib-badge {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(255,255,255,.1);
-      color: rgba(255,255,255,.5);
-    }
-    .lib-badge.ok  { background: rgba(75,165,142,.25); color: #7DDDCC; }
-    .lib-badge.err { background: rgba(220,38,38,.25);  color: #FCA5A5; }
-
-    /* ── LAYOUT ── */
-    .page {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 40px 24px 60px;
-    }
-
-    .page-title {
-      margin-bottom: 28px;
-    }
-
-    .page-title h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--gray-900);
-      letter-spacing: -.3px;
-    }
-
-    .page-title p {
-      font-size: 14px;
-      color: var(--gray-500);
-      margin-top: 4px;
-    }
-
-    /* ── PANEL ── */
-    .panel {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-    }
-
-    .panel-header {
-      padding: 22px 28px;
-      border-bottom: 1px solid var(--gray-100);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .panel-header-icon {
-      width: 38px; height: 38px;
-      background: var(--green-100);
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .panel-header h2 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gray-900);
-    }
-
-    .panel-header p {
-      font-size: 13px;
-      color: var(--gray-500);
-      margin-top: 1px;
-    }
-
-    .panel-body {
-      padding: 28px;
-    }
-
-    /* ── UPLOAD GRID ── */
-    .upload-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    @media (max-width: 680px) {
-      .upload-grid { grid-template-columns: 1fr; }
-    }
-
-    .upload-card {
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      transition: border-color .2s;
-    }
-
-    .upload-card.has-file {
-      border-color: var(--green-400);
-    }
-
-    .upload-card-header {
-      background: var(--gray-100);
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid var(--gray-300);
-    }
-
-    .slot-number {
-      width: 20px; height: 20px;
-      background: var(--green-700);
-      color: white;
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .slot-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-700);
-      text-transform: uppercase;
-      letter-spacing: .4px;
-    }
-
-    .optional-tag {
-      margin-left: auto;
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--gray-500);
-      background: var(--white);
-      border: 1px solid var(--gray-300);
-      padding: 1px 7px;
-      border-radius: 20px;
-    }
-
-    .upload-card-body {
-      padding: 14px;
-    }
-
-    /* Bank select */
-    .bank-select-wrap {
-      position: relative;
-      margin-bottom: 12px;
-    }
-
-    .bank-select-wrap select {
-      width: 100%;
-      padding: 9px 32px 9px 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--gray-700);
-      background: var(--white);
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-sm);
-      outline: none;
-      appearance: none;
-      cursor: pointer;
-      transition: border-color .2s;
-    }
-
-    .bank-select-wrap select:focus { border-color: var(--green-700); }
-
-    .bank-select-wrap::after {
-      content: '';
-      position: absolute;
-      right: 12px; top: 50%;
-      transform: translateY(-50%);
-      width: 0; height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 5px solid var(--gray-500);
-      pointer-events: none;
-    }
-
-    /* Drop zone */
-    .drop-zone {
-      border: 2px dashed var(--gray-300);
-      border-radius: var(--radius-sm);
-      padding: 24px 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .2s;
-      background: var(--gray-100);
-      position: relative;
-    }
-
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: var(--green-700);
-      background: var(--green-50);
-    }
-
-    .drop-zone input[type=file] {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .dz-icon {
-      margin: 0 auto 8px;
-      width: 32px; height: 32px;
-      color: var(--gray-500);
-    }
-
-    .dz-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-700);
-    }
-
-    .dz-sub {
-      font-size: 11px;
-      color: var(--gray-500);
-      margin-top: 2px;
-    }
-
-    /* File chip (after selection) */
-    .file-chip {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: var(--green-100);
-      border: 1px solid var(--green-400);
-      border-radius: var(--radius-sm);
-    }
-
-    .file-chip.visible { display: flex; }
-
-    .chip-icon { color: var(--green-700); flex-shrink: 0; }
-
-    .chip-name {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--green-700);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .chip-remove {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--green-400);
-      font-size: 18px;
-      line-height: 1;
-      padding: 0 2px;
-      transition: color .15s;
-    }
-    .chip-remove:hover { color: var(--red-600); }
-
-    /* ── ACTION BUTTON ── */
-    .action-wrap {
-      padding: 0 28px 28px;
-    }
-
-    .btn-process {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 15px 28px;
-      background: var(--green-700);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 2px 8px rgba(27,107,90,.35);
-    }
-
-    .btn-process:hover:not(:disabled) {
-      background: var(--green-600);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(27,107,90,.4);
-    }
-
-    .btn-process:active:not(:disabled) { transform: translateY(0); }
-
-    .btn-process:disabled {
-      background: var(--gray-300);
-      color: var(--gray-500);
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* ── RESULTS PANEL ── */
-    .results-panel {
-      margin-top: 20px;
-      display: none;
-    }
-
-    .results-panel.visible { display: block; }
-
-    /* ── KPI GRID ── */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 800px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
-
-    .kpi-card {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      padding: 20px 22px;
-      box-shadow: var(--shadow-sm);
-      border-top: 3px solid var(--gray-300);
-    }
-
-    .kpi-card.kpi-saldo {
-      border-top-color: var(--green-700);
-      background: var(--green-900);
-      color: var(--white);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .kpi-card.kpi-entrada { border-top-color: #22A06B; }
-    .kpi-card.kpi-saida   { border-top-color: #E04040; }
-    .kpi-card.kpi-total   { border-top-color: var(--green-400); }
-
-    .kpi-label {
-      font-size: 11px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .5px;
-      margin-bottom: 6px;
-      color: var(--gray-500);
-    }
-
-    .kpi-saldo .kpi-label { color: rgba(255,255,255,.55); }
-
-    .kpi-value {
-      font-size: 22px; font-weight: 700;
-      color: var(--gray-900); letter-spacing: -.5px;
-      line-height: 1.2;
-    }
-
-    .kpi-saldo .kpi-value {
-      font-size: 28px;
-      color: var(--white);
-    }
-
-    .kpi-value.positivo { color: #22A06B; }
-    .kpi-value.negativo { color: #E04040; }
-
-    .kpi-sub {
-      font-size: 12px; color: var(--gray-500); margin-top: 4px;
-    }
-
-    .kpi-saldo .kpi-sub { color: rgba(255,255,255,.45); }
-
-    /* ── BANCO GRID ── */
-    .section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin: 24px 0 12px;
-    }
-
-    .section-title {
-      font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .8px;
-      color: var(--gray-500);
-    }
-
-    .banco-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .banco-card {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      padding: 16px 20px;
-      box-shadow: var(--shadow-sm);
-      border-left: 4px solid var(--green-400);
-    }
-
-    .banco-card-name {
-      font-size: 13px; font-weight: 700;
-      color: var(--gray-900); margin-bottom: 10px;
-    }
-
-    .banco-card-row {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 12px; color: var(--gray-500);
-      margin-bottom: 4px;
-    }
-
-    .banco-card-row span:last-child { font-weight: 600; color: var(--gray-900); }
-    .banco-card-row .val-e { color: #22A06B; font-weight: 600; }
-    .banco-card-row .val-s { color: #E04040; font-weight: 600; }
-
-    /* ── TABLE CONTROLS ── */
-    .table-controls {
-      display: flex; gap: 10px; align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .search-input {
-      flex: 1; min-width: 200px;
-      height: 36px; padding: 0 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: 8px;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; color: var(--gray-900);
-      outline: none;
-      transition: border-color .15s;
-    }
-
-    .search-input:focus { border-color: var(--green-400); }
-
-    .filter-pills {
-      display: flex; gap: 6px;
-    }
-
-    .pill {
-      height: 36px; padding: 0 14px;
-      border: 1px solid var(--gray-300);
-      border-radius: 8px;
-      background: var(--white);
-      font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 600;
-      color: var(--gray-500);
-      cursor: pointer;
-      transition: all .15s;
-    }
-
-    .pill:hover { border-color: var(--green-400); color: var(--green-700); }
-    .pill.active { background: var(--green-900); border-color: var(--green-900); color: var(--white); }
-    .pill.p-entrada.active { background: #22A06B; border-color: #22A06B; color: var(--white); }
-    .pill.p-saida.active   { background: #E04040; border-color: #E04040; color: var(--white); }
-    .pill.p-dupl.active    { background: #B45309; border-color: #B45309; color: var(--white); }
-
-    .table-count {
-      font-size: 12px; color: var(--gray-500);
-      margin-bottom: 8px;
-    }
-
-    /* ── TRANSACTIONS TABLE ── */
-    .table-wrap {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-
-    .table-scroll {
-      overflow-x: auto;
-      max-height: 480px;
-      overflow-y: auto;
-    }
-
-    .lancamentos-table {
-      width: 100%; border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .lancamentos-table thead th {
-      position: sticky; top: 0; z-index: 1;
-      background: var(--green-900);
-      color: rgba(255,255,255,.85);
-      font-size: 11px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .5px;
-      padding: 10px 14px;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .lancamentos-table thead th.col-r { text-align: right; }
-
-    .lancamentos-table tbody tr {
-      border-bottom: 1px solid var(--gray-100);
-      transition: background .1s;
-    }
-
-    .lancamentos-table tbody tr:last-child { border-bottom: none; }
-    .lancamentos-table tbody tr:hover { background: var(--green-50); }
-    .lancamentos-table tbody tr.row-dupl { background: #FFFBEB; }
-    .lancamentos-table tbody tr.row-dupl:hover { background: #FEF3C7; }
-
-    .lancamentos-table td {
-      padding: 9px 14px;
-      color: var(--gray-700);
-      vertical-align: middle;
-    }
-
-    .lancamentos-table td.col-r { text-align: right; font-variant-numeric: tabular-nums; }
-    .lancamentos-table td.col-desc { max-width: 280px; }
-
-    .td-desc-text {
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 260px; display: block;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 20px;
-      letter-spacing: .3px;
-    }
-
-    .badge-e { background: #DCFCE7; color: #166534; }
-    .badge-s { background: #FEE2E2; color: #991B1B; }
-    .badge-d { background: #FEF3C7; color: #92400E; font-size: 9px; padding: 2px 6px; }
-
-    .val-e { color: #166534; font-weight: 600; }
-    .val-s { color: #991B1B; font-weight: 600; }
-
-    .btn-ver-mais {
-      display: block; width: 100%;
-      padding: 12px;
-      background: var(--gray-100); border: none;
-      border-radius: var(--radius-md);
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; font-weight: 600; color: var(--gray-700);
-      cursor: pointer; transition: background .15s;
-      margin-bottom: 24px;
-    }
-
-    .btn-ver-mais:hover { background: var(--gray-300); }
-
-    /* Log de arquivos */
-    .file-log {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-
-    .file-log-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--gray-100);
-      font-size: 13px; font-weight: 600; color: var(--gray-700);
-    }
-
-    .file-log-row {
-      display: flex; align-items: center;
-      padding: 12px 20px; gap: 12px;
-      border-bottom: 1px solid var(--gray-100);
-      font-size: 13px;
-    }
-
-    .file-log-row:last-child { border-bottom: none; }
-
-    .log-status {
-      width: 20px; height: 20px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-
-    .log-status.ok  { background: #DCFCE7; color: #16A34A; }
-    .log-status.err { background: var(--red-100); color: var(--red-600); }
-
-    .log-banco { font-weight: 600; color: var(--gray-900); min-width: 90px; }
-    .log-count { color: var(--gray-500); margin-left: auto; }
-    .log-msg   { color: var(--red-600); font-size: 12px; }
-
-    /* Download button */
-    .btn-download {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; width: 100%; padding: 15px;
-      background: var(--green-900); color: white;
-      border: none; border-radius: var(--radius-md);
-      font-family: 'Inter', sans-serif;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer; transition: background .2s;
-      margin-top: 8px;
-    }
-
-    .btn-download:hover { background: var(--green-700); }
-
-    /* Spinner */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
+      --g900:#0D3B2E;--g700:#1B6B5A;--g600:#227A67;--g400:#4BA58E;
+      --g100:#E6F4F1;--g50:#F2FAF8;
+      --gray900:#111827;--gray700:#374151;--gray500:#6B7280;
+      --gray300:#D1D5DB;--gray100:#F3F4F6;
+      --red600:#DC2626;--red100:#FEE2E2;--white:#FFFFFF;
+      --rsm:8px;--rmd:12px;
+      --shsm:0 1px 3px rgba(0,0,0,.08);--shmd:0 4px 12px rgba(0,0,0,.08);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',system-ui,sans-serif;background:#EDF3F1;color:var(--gray900);min-height:100vh}
+    header{background:var(--g900);height:62px;display:flex;align-items:center;padding:0 32px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25);gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-icon{width:36px;height:36px;background:var(--g700);border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .brand-name{font-size:15px;font-weight:700;color:#fff}
+    .divider{width:1px;height:28px;background:rgba(255,255,255,.15);margin:0 12px}
+    .module{font-size:13px;color:rgba(255,255,255,.55)}
+    .hright{margin-left:auto;display:flex;gap:10px;align-items:center}
+    .btn-portal{font-size:13px;font-weight:500;padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);text-decoration:none;transition:background .15s}
+    .btn-portal:hover{background:rgba(255,255,255,.2);color:#fff}
+    .lib-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+    .lib-badge.ok{background:rgba(75,165,142,.25);color:#7DDDCC}
+    .lib-badge.err{background:rgba(220,38,38,.25);color:#FCA5A5}
+    .page{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+    .page-title{margin-bottom:28px}
+    .page-title h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+    .page-title p{font-size:14px;color:var(--gray500);margin-top:4px}
+    .panel{background:var(--white);border-radius:var(--rmd);box-shadow:var(--shmd);margin-bottom:20px;overflow:hidden}
+    .panel-hdr{padding:18px 24px;border-bottom:1px solid var(--gray100);display:flex;align-items:center;gap:12px}
+    .panel-icon{width:36px;height:36px;background:var(--g100);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center}
+    .panel-hdr h2{font-size:15px;font-weight:600}
+    .panel-hdr p{font-size:13px;color:var(--gray500);margin-top:1px}
+    .panel-body{padding:24px}
+    .upload-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media(max-width:900px){.upload-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.upload-grid{grid-template-columns:1fr}}
+    .upload-slot{border:1px solid var(--gray300);border-radius:var(--rmd);overflow:hidden;transition:border-color .2s}
+    .upload-slot.has-file{border-color:var(--g400)}
+    .slot-hdr{background:var(--gray100);padding:10px 14px;border-bottom:1px solid var(--gray300);display:flex;align-items:center;gap:8px}
+    .slot-num{width:20px;height:20px;background:var(--g700);color:#fff;font-size:11px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .slot-label{font-size:12px;font-weight:600;color:var(--gray700);text-transform:uppercase;letter-spacing:.4px}
+    .slot-tag{margin-left:auto;font-size:10px;color:var(--gray500);background:#fff;border:1px solid var(--gray300);padding:1px 7px;border-radius:20px}
+    .slot-body{padding:14px}
+    .dz{border:2px dashed var(--gray300);border-radius:var(--rsm);padding:20px 12px;text-align:center;cursor:pointer;background:var(--gray100);position:relative;transition:all .2s}
+    .dz:hover,.dz.drag-over{border-color:var(--g700);background:var(--g50)}
+    .dz input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+    .dz-icon{margin:0 auto 6px;width:28px;height:28px;color:var(--gray500)}
+    .dz-title{font-size:12px;font-weight:600;color:var(--gray700)}
+    .dz-sub{font-size:11px;color:var(--gray500);margin-top:2px}
+    .chip{display:none;align-items:center;gap:8px;padding:10px 12px;background:var(--g100);border:1px solid var(--g400);border-radius:var(--rsm)}
+    .chip.on{display:flex}
+    .chip-name{font-size:12px;font-weight:500;color:var(--g700);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .chip-rm{background:none;border:none;cursor:pointer;color:var(--g400);font-size:18px;line-height:1;padding:0 2px;transition:color .15s}
+    .chip-rm:hover{color:var(--red600)}
+    .action-wrap{padding:0 24px 24px}
+    .btn-proc{width:100%;padding:14px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--g700);color:#fff;border:none;border-radius:var(--rmd);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .15s;box-shadow:0 2px 8px rgba(27,107,90,.35)}
+    .btn-proc:hover:not(:disabled){background:var(--g600);transform:translateY(-1px)}
+    .btn-proc:disabled{background:var(--gray300);color:var(--gray500);cursor:not-allowed;box-shadow:none}
+    .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+    @media(max-width:800px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
+    .kpi{background:#fff;border-radius:var(--rmd);padding:18px 20px;box-shadow:var(--shsm);border-top:3px solid var(--gray300)}
+    .kpi.k-sl{border-top-color:var(--g700);background:var(--g900)}
+    .kpi.k-e{border-top-color:#22A06B}
+    .kpi.k-s{border-top-color:#E04040}
+    .kpi.k-t{border-top-color:var(--g400)}
+    .kpi.k-erp{border-top-color:#7C3AED}
+    .kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray500);margin-bottom:6px}
+    .k-sl .kpi-lbl{color:rgba(255,255,255,.55)}
+    .kpi-val{font-size:20px;font-weight:700;color:var(--gray900)}
+    .k-sl .kpi-val{color:#fff;font-size:22px}
+    .kpi-val.pos{color:#22A06B}
+    .kpi-val.neg{color:#E04040}
+    .kpi-sub{font-size:12px;color:var(--gray500);margin-top:3px}
+    .k-sl .kpi-sub{color:rgba(255,255,255,.45)}
+    .results{display:none}
+    .results.on{display:block}
+    .sec-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray500);margin:20px 0 10px}
+    .banco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+    .banco-card{background:#fff;border-radius:var(--rmd);padding:16px 18px;box-shadow:var(--shsm);border-left:4px solid var(--g400)}
+    .banco-name{font-size:13px;font-weight:700;margin-bottom:8px}
+    .banco-row{display:flex;justify-content:space-between;font-size:12px;color:var(--gray500);margin-bottom:3px}
+    .ve{color:#22A06B;font-weight:600}
+    .vs{color:#E04040;font-weight:600}
+    .vn{color:var(--gray900);font-weight:600}
+    .tbl-ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .search{flex:1;min-width:180px;height:34px;padding:0 12px;border:1px solid var(--gray300);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+    .search:focus{border-color:var(--g400)}
+    .pills{display:flex;gap:6px}
+    .pill{height:34px;padding:0 14px;border:1px solid var(--gray300);border-radius:8px;background:#fff;font-size:12px;font-weight:600;color:var(--gray500);cursor:pointer;transition:all .15s}
+    .pill:hover{border-color:var(--g400);color:var(--g700)}
+    .pill.on{background:var(--g900);border-color:var(--g900);color:#fff}
+    .pill.pe.on{background:#22A06B;border-color:#22A06B}
+    .pill.ps.on{background:#E04040;border-color:#E04040}
+    .count{font-size:12px;color:var(--gray500);margin-bottom:6px}
+    .tbl-wrap{background:#fff;border-radius:var(--rmd);box-shadow:var(--shsm);overflow:hidden}
+    .tbl-scroll{overflow-x:auto;max-height:480px;overflow-y:auto}
+    table{width:100%;border-collapse:collapse;font-size:12.5px}
+    thead th{position:sticky;top:0;z-index:1;background:var(--g900);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;white-space:nowrap}
+    thead th.r{text-align:right}
+    tbody tr{border-bottom:1px solid var(--gray100);transition:background .1s}
+    tbody tr:hover{background:var(--g50)}
+    tbody td{padding:8px 12px;color:var(--gray700);vertical-align:middle}
+    tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+    .td-clip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;display:block}
+    .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .badge-e{background:#DCFCE7;color:#166534}
+    .badge-s{background:#FEE2E2;color:#991B1B}
+    .val-e{color:#166534;font-weight:600}
+    .val-s{color:#991B1B;font-weight:600}
+    .btn-more{display:block;width:100%;padding:11px;background:var(--gray100);border:none;border-radius:var(--rmd);font-size:13px;font-weight:600;color:var(--gray700);cursor:pointer;margin-top:8px;transition:background .15s}
+    .btn-more:hover{background:var(--gray300)}
+    .erp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px}
+    .erp-card{background:#fff;border-radius:var(--rmd);padding:16px 18px;box-shadow:var(--shsm);border-left:4px solid #7C3AED}
+    .erp-name{font-size:12px;font-weight:700;color:#5B21B6;margin-bottom:8px}
+    .erp-row{display:flex;justify-content:space-between;font-size:12px;color:var(--gray500);margin-bottom:3px}
+    .alert{padding:12px 16px;border-radius:var(--rsm);font-size:13px;font-weight:500;margin-bottom:12px}
+    .alert-err{background:var(--red100);color:var(--red600)}
+    .alert-warn{background:#FEF3C7;color:#92400E}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+
+    /* ── PLANO DE CONTAS ── */
+    .panel-cats .panel-hdr{cursor:pointer;user-select:none}
+    .panel-cats .panel-hdr:hover{background:var(--g50)}
+    .cats-body{padding:20px 24px 24px;display:none}
+    .cats-body.open{display:block}
+    .cats-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .btn-sm{height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;font-family:'Inter',sans-serif}
+    .btn-add{background:var(--g700);border-color:var(--g700);color:#fff}
+    .btn-add:hover{background:var(--g600)}
+    .btn-reset{background:#fff;border-color:var(--gray300);color:var(--gray700)}
+    .btn-reset:hover{border-color:var(--gray500)}
+    .cats-search{height:32px;padding:0 10px;border:1px solid var(--gray300);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;flex:1;min-width:160px}
+    .cats-search:focus{border-color:var(--g400)}
+    .cats-count{font-size:12px;color:var(--gray500);margin-left:auto;white-space:nowrap}
+    .cats-tbl-wrap{border:1px solid var(--gray100);border-radius:var(--rsm);overflow:hidden}
+    .cats-tbl-scroll{max-height:360px;overflow-y:auto}
+    .cats-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+    .cats-tbl thead th{position:sticky;top:0;background:var(--gray900);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:8px 12px;text-align:left;white-space:nowrap}
+    .cats-tbl tbody tr{border-bottom:1px solid var(--gray100);transition:background .1s}
+    .cats-tbl tbody tr:hover{background:var(--g50)}
+    .cats-tbl td{padding:7px 12px;color:var(--gray700);vertical-align:middle}
+    .ref-badge{font-size:10px;font-weight:700;background:var(--g100);color:var(--g700);padding:2px 7px;border-radius:20px}
+    .custo-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+    .custo-f{background:#DBEAFE;color:#1E40AF}
+    .custo-v{background:#FEF3C7;color:#92400E}
+    .btn-icon{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:6px;font-size:13px;transition:background .15s;line-height:1}
+    .btn-icon:hover{background:var(--gray100)}
+    .btn-del:hover{background:var(--red100);color:var(--red600)}
+    .chave-preview{font-size:11px;color:var(--gray500);font-family:monospace;background:var(--gray100);padding:2px 6px;border-radius:4px;max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+    .toggle-icon{margin-left:auto;font-size:14px;transition:transform .2s;color:var(--gray500)}
+    .toggle-icon.open{transform:rotate(180deg)}
+
+    /* ── MODAL ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+    .modal-overlay.on{display:flex}
+    .modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+    .modal h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--gray900)}
+    .form-row{margin-bottom:16px}
+    .form-label{display:block;font-size:12px;font-weight:600;color:var(--gray700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+    .form-input,.form-select{width:100%;height:38px;padding:0 12px;border:1px solid var(--gray300);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray900);outline:none;transition:border-color .15s}
+    .form-input:focus,.form-select:focus{border-color:var(--g400)}
+    .radio-group{display:flex;gap:10px}
+    .radio-opt{display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;border:1px solid var(--gray300);border-radius:8px;font-size:13px;font-weight:500;transition:all .15s;flex:1;justify-content:center}
+    .radio-opt input{display:none}
+    .radio-opt.sel-f{background:#DBEAFE;border-color:#3B82F6;color:#1E40AF}
+    .radio-opt.sel-v{background:#FEF3C7;border-color:#D97706;color:#92400E}
+    .chave-box{margin-top:12px;background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:10px 14px}
+    .chave-box-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray500);margin-bottom:3px}
+    .chave-box-val{font-size:12px;font-family:monospace;color:var(--g700);word-break:break-all}
+    .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:24px}
+    .btn-cancel{height:36px;padding:0 16px;border-radius:8px;border:1px solid var(--gray300);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--gray700);font-family:'Inter',sans-serif}
+    .btn-save{height:36px;padding:0 20px;border-radius:8px;border:none;background:var(--g700);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+    .btn-save:hover{background:var(--g600)}
+
+    /* ── GERAR EXCEL ── */
+    .btn-gerar{width:100%;padding:15px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--g900);color:#fff;border:none;border-radius:var(--rmd);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:20px}
+    .btn-gerar:hover:not(:disabled){background:var(--g700)}
+    .btn-gerar:disabled{background:var(--gray300);color:var(--gray500);cursor:not-allowed}
   </style>
 </head>
 <body>
 
-<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
 <header>
   <div class="brand">
     <div class="brand-icon">
@@ -724,874 +199,1121 @@
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H7v-2h4V7h2v4h4v2h-4v4z" fill="#7DDDCC"/>
       </svg>
     </div>
-    <div>
-      <div class="brand-name">Clínica Meu Médico</div>
-    </div>
+    <span class="brand-name">Clínica Meu Médico</span>
   </div>
-
-  <div class="brand-divider"></div>
-  <div class="brand-module">Conciliação Bancária</div>
-
-  <div class="header-right">
+  <div class="divider"></div>
+  <span class="module">Módulo Financeiro</span>
+  <div class="hright">
     <a href="index.html" class="btn-portal">← Portal</a>
-    <span class="lib-badge" id="lib-badge">Carregando…</span>
+    <span class="lib-badge" id="lib-badge">Verificando…</span>
   </div>
 </header>
 
-<!-- ── PAGE ───────────────────────────────────────────────────────────── -->
 <div class="page">
-
   <div class="page-title">
-    <h1>Processamento de Extratos</h1>
-    <p>Selecione até 3 extratos bancários para consolidar e gerar a planilha de fluxo de caixa.</p>
+    <h1>Processamento Financeiro Integrado</h1>
+    <p>Faça upload dos extratos bancários e do relatório ERP para gerar a base unificada.</p>
   </div>
 
-  <!-- Upload panel -->
   <div class="panel">
-    <div class="panel-header">
-      <div class="panel-header-icon">
+    <div class="panel-hdr">
+      <div class="panel-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#1B6B5A"/>
-          <path d="M8 14h8v2H8zm0-4h5v2H8z" fill="#1B6B5A"/>
+          <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" fill="#1B6B5A"/>
         </svg>
       </div>
-      <div>
-        <h2>Extratos Bancários</h2>
-        <p>Selecione o banco e faça o upload do arquivo .XLS ou .XLSX</p>
-      </div>
+      <div><h2>Arquivos de Entrada</h2><p>Extratos bancários (.xls/.xlsx) e relatório ERP</p></div>
     </div>
-
     <div class="panel-body">
       <div class="upload-grid">
 
-        <!-- SLOT 1 -->
-        <div class="upload-card" id="card1">
-          <div class="upload-card-header">
-            <div class="slot-number">1</div>
-            <span class="slot-label">Extrato 1</span>
+        <!-- Valori KS -->
+        <div class="upload-slot" id="slot-vks">
+          <div class="slot-hdr">
+            <div class="slot-num">1</div>
+            <span class="slot-label">Valori KS</span>
           </div>
-          <div class="upload-card-body">
-            <div class="bank-select-wrap">
-              <select id="banco1" onchange="onBancoChange(1)">
-                <option value="">Selecione o banco</option>
-                <option value="Valori KS">Valori KS</option>
-                <option value="Valori MM">Valori MM</option>
-                <option value="Santander">Santander</option>
-              </select>
-            </div>
-            <div class="drop-zone" id="dz1"
-                 ondragover="dzDragOver(event,1)" ondragleave="dzDragLeave(1)" ondrop="dzDrop(event,1)">
-              <input type="file" id="f1" accept=".xls,.xlsx" onchange="onFileChange(1)">
-              <svg class="dz-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/>
-              </svg>
-              <div class="dz-title">Clique ou arraste o arquivo</div>
+          <div class="slot-body">
+            <div class="dz" id="dz-vks" ondragover="dzOver(event,'vks')" ondragleave="dzOut('vks')" ondrop="dzDrop(event,'vks')">
+              <input type="file" id="f-vks" accept=".xls,.xlsx" onchange="onFile('vks')">
+              <svg class="dz-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/></svg>
+              <div class="dz-title">Clique ou arraste</div>
               <div class="dz-sub">.XLS · .XLSX</div>
             </div>
-            <div class="file-chip" id="chip1">
-              <svg class="chip-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#1B6B5A"/>
-              </svg>
-              <span class="chip-name" id="chip1-name"></span>
-              <button class="chip-remove" onclick="clearFile(1)" title="Remover">×</button>
+            <div class="chip" id="chip-vks">
+              <span class="chip-name" id="chip-vks-n"></span>
+              <button class="chip-rm" onclick="clearFile('vks')">×</button>
             </div>
           </div>
         </div>
 
-        <!-- SLOT 2 -->
-        <div class="upload-card" id="card2">
-          <div class="upload-card-header">
-            <div class="slot-number">2</div>
-            <span class="slot-label">Extrato 2</span>
-            <span class="optional-tag">Opcional</span>
+        <!-- Valori MM -->
+        <div class="upload-slot" id="slot-vmm">
+          <div class="slot-hdr">
+            <div class="slot-num">2</div>
+            <span class="slot-label">Valori MM</span>
           </div>
-          <div class="upload-card-body">
-            <div class="bank-select-wrap">
-              <select id="banco2" onchange="onBancoChange(2)">
-                <option value="">Selecione o banco</option>
-                <option value="Valori KS">Valori KS</option>
-                <option value="Valori MM">Valori MM</option>
-                <option value="Santander">Santander</option>
-              </select>
-            </div>
-            <div class="drop-zone" id="dz2"
-                 ondragover="dzDragOver(event,2)" ondragleave="dzDragLeave(2)" ondrop="dzDrop(event,2)">
-              <input type="file" id="f2" accept=".xls,.xlsx" onchange="onFileChange(2)">
-              <svg class="dz-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/>
-              </svg>
-              <div class="dz-title">Clique ou arraste o arquivo</div>
+          <div class="slot-body">
+            <div class="dz" id="dz-vmm" ondragover="dzOver(event,'vmm')" ondragleave="dzOut('vmm')" ondrop="dzDrop(event,'vmm')">
+              <input type="file" id="f-vmm" accept=".xls,.xlsx" onchange="onFile('vmm')">
+              <svg class="dz-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/></svg>
+              <div class="dz-title">Clique ou arraste</div>
               <div class="dz-sub">.XLS · .XLSX</div>
             </div>
-            <div class="file-chip" id="chip2">
-              <svg class="chip-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#1B6B5A"/>
-              </svg>
-              <span class="chip-name" id="chip2-name"></span>
-              <button class="chip-remove" onclick="clearFile(2)" title="Remover">×</button>
+            <div class="chip" id="chip-vmm">
+              <span class="chip-name" id="chip-vmm-n"></span>
+              <button class="chip-rm" onclick="clearFile('vmm')">×</button>
             </div>
           </div>
         </div>
 
-        <!-- SLOT 3 -->
-        <div class="upload-card" id="card3">
-          <div class="upload-card-header">
-            <div class="slot-number">3</div>
-            <span class="slot-label">Extrato 3</span>
-            <span class="optional-tag">Opcional</span>
+        <!-- Santander -->
+        <div class="upload-slot" id="slot-sant">
+          <div class="slot-hdr">
+            <div class="slot-num">3</div>
+            <span class="slot-label">Santander</span>
           </div>
-          <div class="upload-card-body">
-            <div class="bank-select-wrap">
-              <select id="banco3" onchange="onBancoChange(3)">
-                <option value="">Selecione o banco</option>
-                <option value="Valori KS">Valori KS</option>
-                <option value="Valori MM">Valori MM</option>
-                <option value="Santander">Santander</option>
-              </select>
-            </div>
-            <div class="drop-zone" id="dz3"
-                 ondragover="dzDragOver(event,3)" ondragleave="dzDragLeave(3)" ondrop="dzDrop(event,3)">
-              <input type="file" id="f3" accept=".xls,.xlsx" onchange="onFileChange(3)">
-              <svg class="dz-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/>
-              </svg>
-              <div class="dz-title">Clique ou arraste o arquivo</div>
+          <div class="slot-body">
+            <div class="dz" id="dz-sant" ondragover="dzOver(event,'sant')" ondragleave="dzOut('sant')" ondrop="dzDrop(event,'sant')">
+              <input type="file" id="f-sant" accept=".xls,.xlsx" onchange="onFile('sant')">
+              <svg class="dz-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/></svg>
+              <div class="dz-title">Clique ou arraste</div>
               <div class="dz-sub">.XLS · .XLSX</div>
             </div>
-            <div class="file-chip" id="chip3">
-              <svg class="chip-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="#1B6B5A"/>
-              </svg>
-              <span class="chip-name" id="chip3-name"></span>
-              <button class="chip-remove" onclick="clearFile(3)" title="Remover">×</button>
+            <div class="chip" id="chip-sant">
+              <span class="chip-name" id="chip-sant-n"></span>
+              <button class="chip-rm" onclick="clearFile('sant')">×</button>
             </div>
           </div>
         </div>
 
-      </div><!-- /upload-grid -->
-    </div><!-- /panel-body -->
+        <!-- ERP -->
+        <div class="upload-slot" id="slot-erp">
+          <div class="slot-hdr">
+            <div class="slot-num">4</div>
+            <span class="slot-label">ERP</span>
+            <span class="slot-tag">Opcional</span>
+          </div>
+          <div class="slot-body">
+            <div class="dz" id="dz-erp" ondragover="dzOver(event,'erp')" ondragleave="dzOut('erp')" ondrop="dzDrop(event,'erp')">
+              <input type="file" id="f-erp" accept=".xls,.xlsx" onchange="onFile('erp')">
+              <svg class="dz-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/></svg>
+              <div class="dz-title">Clique ou arraste</div>
+              <div class="dz-sub">.XLS · .XLSX</div>
+            </div>
+            <div class="chip" id="chip-erp">
+              <span class="chip-name" id="chip-erp-n"></span>
+              <button class="chip-rm" onclick="clearFile('erp')">×</button>
+            </div>
+          </div>
+        </div>
 
+      </div>
+    </div>
     <div class="action-wrap">
-      <button class="btn-process" id="btn" onclick="processar()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z" fill="white"/>
-        </svg>
-        Processar e Gerar Planilha Excel
+      <button class="btn-proc" id="btn-proc" onclick="processar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7z" fill="white"/></svg>
+        Processar Arquivos
       </button>
     </div>
-  </div><!-- /panel -->
+  </div>
 
-  <!-- ── RESULTS ──────────────────────────────────────────────────────── -->
-  <div class="results-panel" id="results">
+  <!-- PLANO DE CONTAS -->
+  <div class="panel panel-cats">
+    <div class="panel-hdr" onclick="toggleCats()">
+      <div class="panel-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#1B6B5A"/>
+        </svg>
+      </div>
+      <div><h2>Plano de Contas</h2><p>Categorias para alocação dos lançamentos no Excel</p></div>
+      <span class="toggle-icon" id="cats-icon">▼</span>
+    </div>
+    <div class="cats-body" id="cats-body">
+      <div class="cats-toolbar">
+        <button class="btn-sm btn-add" onclick="openModal()">+ Adicionar</button>
+        <button class="btn-sm btn-reset" onclick="restoreDefault()">↺ Restaurar Padrão</button>
+        <input type="text" class="cats-search" id="cats-search" placeholder="Filtrar categorias…" oninput="renderCats()">
+        <span class="cats-count" id="cats-count"></span>
+      </div>
+      <div class="cats-tbl-wrap">
+        <div class="cats-tbl-scroll">
+          <table class="cats-tbl">
+            <thead>
+              <tr><th>REF</th><th>CUSTO</th><th>DISCRIMINAÇÃO</th><th>CATEGORIA</th><th>CHAVE</th><th></th></tr>
+            </thead>
+            <tbody id="cats-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- KPIs principais -->
-    <div class="kpi-grid">
-      <div class="kpi-card kpi-saldo">
-        <div class="kpi-label">Saldo Líquido do Período</div>
-        <div class="kpi-value" id="kpi-saldo">—</div>
-        <div class="kpi-sub" id="kpi-periodo">—</div>
+  <!-- MODAL ADD/EDIT -->
+  <div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+    <div class="modal">
+      <h3 id="modal-title">Adicionar Categoria</h3>
+      <input type="hidden" id="modal-idx" value="-1">
+
+      <div class="form-row">
+        <label class="form-label">REF</label>
+        <input type="text" class="form-input" id="m-ref" placeholder="ex: 1.1" oninput="updateChavePreview()">
       </div>
-      <div class="kpi-card kpi-entrada">
-        <div class="kpi-label">Total Entradas</div>
-        <div class="kpi-value" id="kpi-entradas">—</div>
-        <div class="kpi-sub" id="kpi-entradas-n">—</div>
+      <div class="form-row">
+        <label class="form-label">Tipo de Custo</label>
+        <div class="radio-group">
+          <label class="radio-opt" id="opt-f" onclick="setCusto('FIXO')">
+            <input type="radio" name="custo" value="FIXO"> FIXO
+          </label>
+          <label class="radio-opt" id="opt-v" onclick="setCusto('VARIAVEL')">
+            <input type="radio" name="custo" value="VARIAVEL"> VARIÁVEL
+          </label>
+        </div>
       </div>
-      <div class="kpi-card kpi-saida">
-        <div class="kpi-label">Total Saídas</div>
-        <div class="kpi-value" id="kpi-saidas">—</div>
-        <div class="kpi-sub" id="kpi-saidas-n">—</div>
+      <div class="form-row">
+        <label class="form-label">Discriminação</label>
+        <input type="text" class="form-input" id="m-disc" placeholder="ex: AGUA E ESGOTO" oninput="updateChavePreview()" style="text-transform:uppercase">
       </div>
-      <div class="kpi-card kpi-total">
-        <div class="kpi-label">Lançamentos</div>
-        <div class="kpi-value" id="kpi-total">—</div>
-        <div class="kpi-sub" id="kpi-dupl">—</div>
+      <div class="form-row">
+        <label class="form-label">Categoria</label>
+        <input type="text" class="form-input" id="m-cat" placeholder="ex: DESPESAS ADMINISTRATIVAS" list="cats-datalist" oninput="updateChavePreview()" style="text-transform:uppercase">
+        <datalist id="cats-datalist"></datalist>
+      </div>
+
+      <div class="chave-box">
+        <div class="chave-box-lbl">CHAVE gerada</div>
+        <div class="chave-box-val" id="chave-preview">—</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-save" onclick="saveModal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+    <div id="erros-box"></div>
+
+    <div class="sec-lbl">Extratos Bancários</div>
+    <div class="kpi-row">
+      <div class="kpi k-sl">
+        <div class="kpi-lbl">Saldo Líquido</div>
+        <div class="kpi-val" id="k-saldo">—</div>
+        <div class="kpi-sub" id="k-periodo">—</div>
+      </div>
+      <div class="kpi k-e">
+        <div class="kpi-lbl">Total Entradas</div>
+        <div class="kpi-val" id="k-ent">—</div>
+        <div class="kpi-sub" id="k-ent-n">—</div>
+      </div>
+      <div class="kpi k-s">
+        <div class="kpi-lbl">Total Saídas</div>
+        <div class="kpi-val" id="k-sai">—</div>
+        <div class="kpi-sub" id="k-sai-n">—</div>
+      </div>
+      <div class="kpi k-t">
+        <div class="kpi-lbl">Lançamentos</div>
+        <div class="kpi-val" id="k-tot">—</div>
+        <div class="kpi-sub" id="k-bancos">—</div>
+      </div>
+      <div class="kpi k-erp">
+        <div class="kpi-lbl">ERP — Registros</div>
+        <div class="kpi-val" id="k-erp">—</div>
+        <div class="kpi-sub" id="k-erp-tot">—</div>
       </div>
     </div>
 
-    <!-- Breakdown por banco -->
-    <div class="section-header">
-      <div class="section-title">Resumo por Banco</div>
-    </div>
+    <div class="sec-lbl">Resumo por Banco</div>
     <div class="banco-grid" id="banco-grid"></div>
 
-    <!-- Log de arquivos com erros -->
-    <div class="file-log" id="file-log" style="display:none">
-      <div class="file-log-header">Avisos de Processamento</div>
-      <div id="file-log-rows"></div>
-    </div>
-
-    <!-- Tabela de lançamentos -->
-    <div class="section-header">
-      <div class="section-title">Lançamentos</div>
-    </div>
-    <div class="table-controls">
-      <input type="text" class="search-input" id="search-input"
-             placeholder="Buscar por descrição ou banco…"
-             oninput="filtrarTabela()">
-      <div class="filter-pills">
-        <button class="pill active"    id="pill-todos"   onclick="setPill('todos')">Todos</button>
-        <button class="pill p-entrada" id="pill-entrada" onclick="setPill('entrada')">Entradas</button>
-        <button class="pill p-saida"   id="pill-saida"   onclick="setPill('saida')">Saídas</button>
-        <button class="pill p-dupl"    id="pill-duplicata" onclick="setPill('duplicata')">Duplicatas</button>
+    <div class="sec-lbl">Lançamentos</div>
+    <div class="tbl-ctrl">
+      <input type="text" class="search" id="search" placeholder="Buscar descrição, banco ou condição…" oninput="filtrar()">
+      <div class="pills">
+        <button class="pill on"  id="pill-todos"  onclick="setPill('todos')">Todos</button>
+        <button class="pill pe"  id="pill-entrada" onclick="setPill('entrada')">Entradas</button>
+        <button class="pill ps"  id="pill-saida"   onclick="setPill('saida')">Saídas</button>
       </div>
     </div>
-    <div class="table-count" id="table-count"></div>
-    <div class="table-wrap">
-      <div class="table-scroll">
-        <table class="lancamentos-table">
+    <div class="count" id="count"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Descrição</th>
-              <th>Banco</th>
-              <th>Forma Pgto.</th>
-              <th>Tipo</th>
-              <th class="col-r">Valor (R$)</th>
-              <th class="col-r">Saldo (R$)</th>
+              <th>Data</th><th>Banco</th><th>Condição</th><th>Descrição</th>
+              <th>Tipo</th><th class="r">Valor (R$)</th><th class="r">Saldo (R$)</th><th>Mês</th>
             </tr>
           </thead>
-          <tbody id="tabela-body"></tbody>
+          <tbody id="tbody"></tbody>
         </table>
       </div>
     </div>
-    <button class="btn-ver-mais" id="btn-ver-mais" onclick="verMais()" style="display:none">
-      Ver mais lançamentos…
+    <button class="btn-more" id="btn-more" onclick="verMais()" style="display:none"></button>
+
+    <div id="erp-sec" style="display:none">
+      <div class="sec-lbl" style="margin-top:28px">ERP — Resumo por Conta Bancária</div>
+      <div class="erp-grid" id="erp-grid"></div>
+      <div class="count" id="erp-count"></div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Conta Bancária</th><th>Cat. Faturamento</th><th>Cliente/Fornecedor</th>
+                <th>Pagamento</th><th>Doc Corrigido</th><th>Profissional</th>
+                <th class="r">Valor</th><th class="r">Desconto</th><th class="r">Total</th>
+              </tr>
+            </thead>
+            <tbody id="erp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <button class="btn-more" id="erp-more" onclick="verMaisErp()" style="display:none"></button>
+    </div>
+
+    <button class="btn-gerar" id="btn-gerar" onclick="gerarExcel()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg>
+      Gerar Planilha Excel
     </button>
 
-    <!-- Download -->
-    <button class="btn-download" id="btn-download" onclick="downloadExcel()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
-      </svg>
-      Baixar Planilha Excel — conciliacao_bancaria.xlsx
-    </button>
+  </div>
+</div>
 
-  </div><!-- /results -->
-
-</div><!-- /page -->
-
-<!-- ── SCRIPTS ────────────────────────────────────────────────────────── -->
 <script>
-// ── BIBLIOTECA ────────────────────────────────────────────────────────────────
+// ── UTILITÁRIOS ───────────────────────────────────────────────────────────────
 
-function getX() { return window.XLSX || null; }
-
-window.addEventListener('DOMContentLoaded', () => {
-  const badge = document.getElementById('lib-badge');
-  const ok = !!getX() && typeof ExcelJS !== 'undefined';
-  if (!ok) {
-    badge.textContent = '⚠ Biblioteca offline';
-    badge.className = 'lib-badge err';
-    document.getElementById('btn').disabled = true;
-  } else {
-    badge.textContent = '✓ Excel formatado';
-    badge.className = 'lib-badge ok';
-  }
-});
-
-// ── ESTADO LOCAL ──────────────────────────────────────────────────────────────
-
-const state = { files: {}, excelBytes: null };
-
-// ── UI: DRAG AND DROP ─────────────────────────────────────────────────────────
-
-function dzDragOver(e, n) {
-  e.preventDefault();
-  document.getElementById('dz' + n).classList.add('drag-over');
-}
-
-function dzDragLeave(n) {
-  document.getElementById('dz' + n).classList.remove('drag-over');
-}
-
-function dzDrop(e, n) {
-  e.preventDefault();
-  dzDragLeave(n);
-  const file = e.dataTransfer.files[0];
-  if (file) setFile(n, file);
-}
-
-function onFileChange(n) {
-  const input = document.getElementById('f' + n);
-  if (input.files[0]) setFile(n, input.files[0]);
-}
-
-function onBancoChange(n) {
-  // nada extra por enquanto
-}
-
-function setFile(n, file) {
-  state.files[n] = file;
-  document.getElementById('dz' + n).style.display = 'none';
-  const chip = document.getElementById('chip' + n);
-  chip.classList.add('visible');
-  document.getElementById('chip' + n + '-name').textContent = file.name;
-  document.getElementById('card' + n).classList.add('has-file');
-}
-
-function clearFile(n) {
-  delete state.files[n];
-  document.getElementById('f' + n).value = '';
-  document.getElementById('dz' + n).style.display = '';
-  document.getElementById('chip' + n).classList.remove('visible');
-  document.getElementById('card' + n).classList.remove('has-file');
-}
-
-// ── CONSTANTES ────────────────────────────────────────────────────────────────
-
-const COLUNAS = [
-  { nome: 'Data',               wch: 12 },
-  { nome: 'Descrição',          wch: 52 },
-  { nome: 'Tipo',               wch: 11 },
-  { nome: 'Valor (R$)',         wch: 15 },
-  { nome: 'Saldo (R$)',         wch: 15 },
-  { nome: 'Banco / Origem',     wch: 18 },
-  { nome: 'Forma de Pagamento', wch: 24 },
-  { nome: 'Categoria',          wch: 18 },
-  { nome: 'Apuração',           wch: 15 },
-  { nome: 'Observação',         wch: 25 },
-];
-
-const SICOOB_FORMA = [
-  [/transfer.*pix|pix\s*envi/i,        'Pix Enviado'],
-  [/dep.*pix|pix\s*receb/i,            'Pix Recebido'],
-  [/tarifa.*entrada.*pix|tarifa.*pix/i, 'Tarifa PIX'],
-  [/antecipa.*receb/i,                  'Antecipação Cartão'],
-  [/liquida.*cart.*d[eé]bito/i,         'Cartão Débito'],
-  [/pagamento.*boleto|boleto/i,         'Boleto'],
-  [/dep[oó]sito/i,                      'Depósito / TED'],
-  [/tarifa/i,                           'Tarifa Bancária'],
-  [/ted|doc\b/i,                        'TED / DOC'],
-];
-
-const SANTANDER_FORMA = [
-  [/pix\s*recebido/i,                   'Pix Recebido'],
-  [/tarifa avulsa envio pix/i,          'Pix Enviado'],
-  [/tarifa.*pix/i,                      'Tarifa PIX'],
-  [/pagamento cartao|getnet/i,          'Cartão Débito / Antecipação'],
-  [/antecipacao/i,                      'Antecipação Cartão'],
-  [/pagamento.*boleto|boleto/i,         'Boleto'],
-  [/darf|tributos/i,                    'DARF / Imposto'],
-  [/tarifa|tar liq/i,                   'Tarifa Bancária'],
-  [/cr cob|recebimento/i,               'Cobrança'],
-  [/ted|doc\b/i,                        'TED / DOC'],
-];
-
-function inferForma(txt, pads) {
-  if (!txt) return 'Outros';
-  for (const [re, l] of pads) if (re.test(txt)) return l;
-  return 'Outros';
-}
-
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
 function parseDate(v) {
+  if (!v && v !== 0) return null;
   if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
-  const s = String(v || '').trim();
-  const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m1) return new Date(+m1[3], +m1[2]-1, +m1[1]);
-  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m2) return new Date(+m2[1], +m2[2]-1, +m2[3]);
   if (typeof v === 'number' && v > 1000)
     return new Date(Math.round((v - 25569) * 86400000));
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
   return null;
 }
 
 function fmtDate(d) {
   if (!d) return '';
-  return [String(d.getDate()).padStart(2,'0'),
-          String(d.getMonth()+1).padStart(2,'0'),
-          d.getFullYear()].join('/');
+  return [String(d.getDate()).padStart(2,'0'), String(d.getMonth()+1).padStart(2,'0'), d.getFullYear()].join('/');
+}
+
+function fmtMes(d) {
+  if (!d) return '';
+  return `${String(d.getMonth()+1).padStart(2,'0')} ${MESES[d.getMonth()]} - ${String(d.getFullYear()).slice(-2)}`;
 }
 
 function parseNum(v) {
   if (v === null || v === undefined || v === '') return NaN;
   if (typeof v === 'number') return v;
-  const s = String(v).trim();
-  const lastDot   = s.lastIndexOf('.');
-  const lastComma = s.lastIndexOf(',');
-  if (lastComma > lastDot) {
-    // Brazilian format: 1.234,56 → remove dots, comma→dot
-    return parseFloat(s.replace(/\./g, '').replace(',', '.'));
-  } else {
-    // US / plain format: 1,234.56 or 1234.56 → remove commas only
-    return parseFloat(s.replace(/,/g, ''));
-  }
+  const s = String(v).trim().replace(/\s/g,'');
+  const lDot = s.lastIndexOf('.');
+  const lComma = s.lastIndexOf(',');
+  if (lComma > lDot) return parseFloat(s.replace(/\./g,'').replace(',','.'));
+  return parseFloat(s.replace(/,/g,''));
 }
 
 function fmtBRL(n) {
-  return isNaN(n) ? '—' : 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (isNaN(n) || n == null) return '—';
+  return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function makeId(banco, data, valor, desc) {
+  return [banco.toUpperCase(), fmtDate(data), Math.abs(valor).toFixed(2), String(desc).slice(0,40).toUpperCase().trim()].join('|');
+}
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+const S = { files: {}, lanc: [], erp: [], cats: [] };
+
+// ── PLANO DE CONTAS — PADRÃO ──────────────────────────────────────────────────
+const DEFAULT_CATS = [
+  // DESPESAS ADMINISTRATIVAS
+  {ref:'1.1',  custo:'FIXO',    disc:'AGUA E ESGOTO',                      cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.2',  custo:'FIXO',    disc:'ALUGUEL',                            cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.3',  custo:'VARIAVEL',disc:'CERTIDOES E CERTIFICACOES',          cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.4',  custo:'FIXO',    disc:'CONTABILIDADE',                      cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.5',  custo:'FIXO',    disc:'ENERGIA ELETRICA',                   cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.6',  custo:'FIXO',    disc:'CARTAO EMPRESARIAL',                 cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.7',  custo:'FIXO',    disc:'APARTAMENTO CALDAS',                 cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.8',  custo:'FIXO',    disc:'SEGURO PREDIAL',                     cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.9',  custo:'VARIAVEL',disc:'INSUMOS DE ESCRITORIO',              cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.10', custo:'VARIAVEL',disc:'INSUMOS E MEDICAMENTOS',             cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.11', custo:'VARIAVEL',disc:'SERVICOS DE MANUTENCAO NO GERAL',    cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.12', custo:'VARIAVEL',disc:'SERVICOS GRAFICOS',                  cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.13', custo:'FIXO',    disc:'TELEFONIA E INTERNET',               cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.14', custo:'FIXO',    disc:'OUTRAS DESPESAS ADMINISTRATIVAS',    cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.15', custo:'VARIAVEL',disc:'OUTRAS DESPESAS ADMINISTRATIVAS',    cat:'DESPESAS ADMINISTRATIVAS'},
+  {ref:'1.16', custo:'VARIAVEL',disc:'INSUMOS DE LIMPEZA (DML)',           cat:'DESPESAS ADMINISTRATIVAS'},
+  // DESPESAS COM PESSOAL
+  {ref:'4.5',  custo:'FIXO',    disc:'FOLHA DE PAGAMENTO',                 cat:'DESPESAS COM PESSOAL'},
+  {ref:'4.6',  custo:'FIXO',    disc:'GRATIFICACAO',                       cat:'DESPESAS COM PESSOAL'},
+  {ref:'4.7',  custo:'VARIAVEL',disc:'BENEFICIOS',                         cat:'DESPESAS COM PESSOAL'},
+  {ref:'4.9',  custo:'FIXO',    disc:'VALE TRANSPORTE',                    cat:'DESPESAS COM PESSOAL'},
+  {ref:'4.10', custo:'FIXO',    disc:'VALE REFEICAO',                      cat:'DESPESAS COM PESSOAL'},
+  // DESPESAS FINANCEIRAS
+  {ref:'6.3',  custo:'VARIAVEL',disc:'REPARACOES E RESSARCIMENTO A CLIENTES', cat:'DESPESAS FINANCEIRAS'},
+  {ref:'6.4',  custo:'VARIAVEL',disc:'TARIFAS BANCARIAS',                  cat:'DESPESAS FINANCEIRAS'},
+  // DIVIDENDOS
+  {ref:'3.1',  custo:'VARIAVEL',disc:'RETIRADA DE SOCIOS',                 cat:'DIVIDENDOS'},
+  {ref:'3.3',  custo:'VARIAVEL',disc:'OUTROS PROFISSIONAIS AVULSOS',       cat:'DIVIDENDOS'},
+  // FINANCEIRO
+  {ref:'9.1',  custo:'VARIAVEL',disc:'TRANSFERENCIA ENTRE CONTAS',         cat:'FINANCEIRO'},
+  {ref:'9.2',  custo:'VARIAVEL',disc:'PAGAMENTOS CREDITADOS',              cat:'FINANCEIRO'},
+  // SALDO ANTERIOR
+  {ref:'10.1', custo:'VARIAVEL',disc:'SALDO ANTERIOR',                     cat:'SALDO ANTERIOR'},
+];
+
+const LS_KEY = 'clinica_plano_contas';
+
+function makeChave(ref, custo, disc, cat) {
+  return `${ref} - ${custo} - ${disc} - ${cat}`;
+}
+
+function saveCats() {
+  localStorage.setItem(LS_KEY, JSON.stringify(S.cats));
+}
+
+function loadCats() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    S.cats = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_CATS));
+  } catch { S.cats = JSON.parse(JSON.stringify(DEFAULT_CATS)); }
+  renderCats();
+}
+
+function restoreDefault() {
+  if (!confirm('Restaurar categorias padrão? As alterações serão perdidas.')) return;
+  S.cats = JSON.parse(JSON.stringify(DEFAULT_CATS));
+  saveCats();
+  renderCats();
+}
+
+// ── RENDER CATEGORIAS ─────────────────────────────────────────────────────────
+function renderCats() {
+  const busca = (document.getElementById('cats-search').value||'').toLowerCase().trim();
+  const lista = busca
+    ? S.cats.filter(c =>
+        c.ref.toLowerCase().includes(busca) ||
+        c.disc.toLowerCase().includes(busca) ||
+        c.cat.toLowerCase().includes(busca) ||
+        makeChave(c.ref,c.custo,c.disc,c.cat).toLowerCase().includes(busca)
+      )
+    : S.cats;
+
+  document.getElementById('cats-count').textContent = `${lista.length} de ${S.cats.length}`;
+
+  const tbody = document.getElementById('cats-tbody');
+  tbody.innerHTML = '';
+  lista.forEach((c, viIdx) => {
+    const realIdx = S.cats.indexOf(c);
+    const chave = makeChave(c.ref, c.custo, c.disc, c.cat);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="ref-badge">${c.ref}</span></td>
+      <td><span class="custo-badge ${c.custo==='FIXO'?'custo-f':'custo-v'}">${c.custo}</span></td>
+      <td style="font-weight:500">${c.disc}</td>
+      <td style="color:var(--gray500);font-size:12px">${c.cat}</td>
+      <td><span class="chave-preview" title="${chave}">${chave}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn-icon" onclick="openModal(${realIdx})" title="Editar">✏️</button>
+        <button class="btn-icon btn-del" onclick="deleteCat(${realIdx})" title="Excluir">🗑️</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Atualiza datalist de categorias no modal
+  const cats = [...new Set(S.cats.map(c=>c.cat))];
+  document.getElementById('cats-datalist').innerHTML =
+    cats.map(c=>`<option value="${c}">`).join('');
+}
+
+function deleteCat(idx) {
+  if (!confirm(`Excluir "${S.cats[idx].disc}"?`)) return;
+  S.cats.splice(idx, 1);
+  saveCats();
+  renderCats();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+let _custo = 'FIXO';
+
+function toggleCats() {
+  const body = document.getElementById('cats-body');
+  const icon = document.getElementById('cats-icon');
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+function openModal(idx = -1) {
+  document.getElementById('modal-idx').value = idx;
+  if (idx >= 0) {
+    const c = S.cats[idx];
+    document.getElementById('modal-title').textContent = 'Editar Categoria';
+    document.getElementById('m-ref').value  = c.ref;
+    document.getElementById('m-disc').value = c.disc;
+    document.getElementById('m-cat').value  = c.cat;
+    setCusto(c.custo);
+  } else {
+    document.getElementById('modal-title').textContent = 'Adicionar Categoria';
+    document.getElementById('m-ref').value  = '';
+    document.getElementById('m-disc').value = '';
+    document.getElementById('m-cat').value  = '';
+    setCusto('FIXO');
+  }
+  updateChavePreview();
+  document.getElementById('modal-overlay').classList.add('on');
+  document.getElementById('m-ref').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('on');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function setCusto(v) {
+  _custo = v;
+  document.getElementById('opt-f').className = 'radio-opt' + (v==='FIXO'?' sel-f':'');
+  document.getElementById('opt-v').className = 'radio-opt' + (v==='VARIAVEL'?' sel-v':'');
+  updateChavePreview();
+}
+
+function updateChavePreview() {
+  const ref  = (document.getElementById('m-ref').value||'').trim();
+  const disc = (document.getElementById('m-disc').value||'').trim().toUpperCase();
+  const cat  = (document.getElementById('m-cat').value||'').trim().toUpperCase();
+  document.getElementById('chave-preview').textContent =
+    ref && disc && cat ? makeChave(ref, _custo, disc, cat) : '—';
+}
+
+function saveModal() {
+  const ref  = (document.getElementById('m-ref').value||'').trim();
+  const disc = (document.getElementById('m-disc').value||'').trim().toUpperCase();
+  const cat  = (document.getElementById('m-cat').value||'').trim().toUpperCase();
+  if (!ref || !disc || !cat) { alert('Preencha todos os campos.'); return; }
+  const idx = parseInt(document.getElementById('modal-idx').value);
+  const entry = { ref, custo: _custo, disc, cat };
+  if (idx >= 0) S.cats[idx] = entry;
+  else S.cats.push(entry);
+  saveCats();
+  renderCats();
+  closeModal();
+}
+
+// ── GERAR EXCEL — Fase 3 ─────────────────────────────────────────────────────
+
+function buildListas(wb) {
+  const ws = wb.addWorksheet('LISTAS');
+  ws.columns = [
+    {key:'a', width:10}, {key:'b', width:12}, {key:'c', width:35},
+    {key:'d', width:30}, {key:'e', width:72},
+  ];
+  const hRow = ws.addRow(['REF','CUSTO','DISCRIMINAÇÃO','CATEGORIA','CHAVE']);
+  hRow.eachCell(cell => {
+    cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+  });
+  hRow.height = 24;
+  S.cats.forEach(c => {
+    ws.addRow([c.ref, c.custo, c.disc, c.cat, makeChave(c.ref,c.custo,c.disc,c.cat)]);
+  });
+  ws.views = [{state:'frozen', ySplit:1}];
+}
+
+function buildApuracao(wb) {
+  const ws = wb.addWorksheet('APURAÇÃO');
+  ws.columns = [
+    {key:'a', width:14}, // A  DT PGTO
+    {key:'b', width:18}, // B  FORMA
+    {key:'c', width:15}, // C  CONDIÇÃO
+    {key:'d', width:10}, // D  PARCELA
+    {key:'e', width:42}, // E  PRESTADOR
+    {key:'f', width:42}, // F  ALOCAÇÃO
+    {key:'g', width:12}, // G  CUSTO
+    {key:'h', width:35}, // H  DISCRIMINAÇÃO
+    {key:'i', width:30}, // I  CATEGORIA
+    {key:'j', width:15}, // J  ENTRADA
+    {key:'k', width:15}, // K  SAÍDA
+    {key:'l', width:22}, // L  COMPROVANTE
+    {key:'m', width:16}, // M  MÊS
+    {key:'n', width:15}, // N  TOTAL
+  ];
+
+  const HDRS = [
+    'DT PGTO','FORMA','CONDIÇÃO','PARCELA','PRESTADOR / COLABORADOR',
+    'ALOCAÇÃO','CUSTO','DISCRIMINAÇÃO','CATEGORIA',
+    'ENTRADA','SAÍDA','COMPROVANTE / RECIBO','MÊS','TOTAL'
+  ];
+  const hRow = ws.addRow(HDRS);
+  hRow.eachCell(cell => {
+    cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
+    cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+  });
+  hRow.height = 30;
+
+  const sorted  = [...S.lanc].sort((a,b) => a.data - b.data);
+  const dvLast  = S.cats.length + 1; // last row in LISTAS with data
+
+  sorted.forEach((r, i) => {
+    const rn  = i + 2;
+    const isE = r.tipo === 'Entrada';
+
+    const row = ws.addRow([
+      r.data,                    // A
+      r.banco,                   // B
+      r.condicao,                // C
+      'N/A',                     // D
+      r.descricao,               // E
+      null,                      // F  ALOCAÇÃO — usuário preenche
+      {formula:`IFERROR(INDEX(LISTAS!$B:$B,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // G
+      {formula:`IFERROR(INDEX(LISTAS!$C:$C,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // H
+      {formula:`IFERROR(INDEX(LISTAS!$D:$D,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // I
+      isE ? r.valor : null,      // J  ENTRADA
+      isE ? null  : r.valor,     // K  SAÍDA
+      null,                      // L  COMPROVANTE — usuário preenche
+      r.mes,                     // M
+      {formula:`IF(J${rn}>0,J${rn},K${rn})`}, // N
+    ]);
+
+    row.getCell(1).numFmt    = 'DD/MM/YYYY';
+    row.getCell(1).alignment = {horizontal:'center'};
+    row.getCell(10).numFmt   = '#,##0.00';
+    row.getCell(11).numFmt   = '#,##0.00';
+    row.getCell(13).alignment = {horizontal:'center'};
+    row.getCell(14).numFmt   = '#,##0.00';
+
+    row.getCell(6).dataValidation = {
+      type:'list', allowBlank:true,
+      formulae:[`LISTAS!$E$2:$E$${dvLast}`],
+      showErrorMessage:false,
+    };
+  });
+
+  const lastRow = sorted.length + 1;
+  // Formatação condicional (prioridade 1 = mais alta):
+  // 1 → ALOCAÇÃO vazia = amarelo  (avisa para preencher)
+  // 2 → Entrada = verde
+  // 3 → Saída   = rosa/vermelho
+  ws.addConditionalFormatting({
+    ref: `A2:N${lastRow}`,
+    rules: [
+      {type:'expression', formulae:[`$F2=""`], priority:1,
+       style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFFF9C4'}}}},
+      {type:'expression', formulae:[`$J2>0`],  priority:2,
+       style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFE8F5E9'}}}},
+      {type:'expression', formulae:[`$K2>0`],  priority:3,
+       style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFCE4EC'}}}},
+    ]
+  });
+
+  ws.views      = [{state:'frozen', ySplit:1}];
+  ws.autoFilter = {from:'A1', to:'N1'};
+}
+
+function buildERP(wb) {
+  const ws = wb.addWorksheet('ERP');
+  ws.columns = [
+    {key:'a',width:22},{key:'b',width:22},{key:'c',width:35},
+    {key:'d',width:14},{key:'e',width:15},{key:'f',width:30},
+    {key:'g',width:14},{key:'h',width:14},{key:'i',width:14},
+  ];
+  const hRow = ws.addRow([
+    'CONTA BANCÁRIA','CAT. FATURAMENTO','CLIENTE / FORNECEDOR',
+    'PAGAMENTO','DOC CORRIGIDO','PROFISSIONAL','VALOR','DESCONTO','TOTAL'
+  ]);
+  hRow.eachCell(cell => {
+    cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF4C1D95'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+  });
+  hRow.height = 26;
+
+  S.erp.forEach(r => {
+    const row = ws.addRow([
+      r.conta_bancaria,
+      r.cat_faturamento,
+      r.cliente_fornecedor,
+      r.pagamento,
+      r.doc_corrigido,
+      r.profissional,
+      isNaN(r.valor_titulo) ? null : r.valor_titulo,
+      r.desconto > 0       ? r.desconto : null,
+      isNaN(r.total)       ? null : r.total,
+    ]);
+    row.getCell(4).numFmt = 'DD/MM/YYYY';
+    [7, 8, 9].forEach(c => { row.getCell(c).numFmt = '#,##0.00'; });
+  });
+
+  ws.views      = [{state:'frozen', ySplit:1}];
+  ws.autoFilter = {from:'A1', to:'I1'};
+}
+
+async function gerarExcel() {
+  if (!S.lanc.length) { alert('Processe os arquivos primeiro.'); return; }
+  if (typeof ExcelJS === 'undefined') {
+    alert('Biblioteca ExcelJS não carregada. Verifique sua conexão com a internet.');
+    return;
+  }
+
+  const btn  = document.getElementById('btn-gerar');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Gerando Excel…';
+
+  try {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Clínica Meu Médico';
+    wb.created  = new Date();
+
+    buildListas(wb);
+    buildApuracao(wb);
+    if (S.erp.length) buildERP(wb);
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob   = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url    = URL.createObjectURL(blob);
+    const a      = document.createElement('a');
+    const datas  = S.lanc.map(r => r.data).filter(Boolean);
+    const mesTag = fmtMes(new Date(Math.max(...datas))).replace(/ /g,'_').replace(/-/g,'').trim();
+    a.href     = url;
+    a.download = `FINANCEIRO_${mesTag}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error(e);
+    alert('Erro ao gerar Excel: ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = orig;
+}
+
+// ── CONDIÇÃO ──────────────────────────────────────────────────────────────────
+function condValori(tipo) {
+  const t = (tipo||'').toLowerCase();
+  if (t.includes('pix')) return 'PIX';
+  if (t.includes('boleto')) return 'BOLETO';
+  if (t.includes('antecip') || t.includes('recebíveis') || t.includes('recebiveis')) return 'CARTÃO CRÉDITO';
+  if (t.includes('débito') || t.includes('debito') || t.includes('liquidação de cartão') || t.includes('liquidacao de cartao')) return 'CARTÃO DÉBITO';
+  if (t.includes('depósito') || t.includes('deposito')) return 'DEPÓSITO';
+  if (t.includes('tarifa')) return 'TARIFA';
+  if (t.includes('ted') || t.includes('doc')) return 'TED/DOC';
+  if (t.includes('saque')) return 'SAQUE';
+  return 'OUTROS';
+}
+
+function condSant(hist) {
+  const h = (hist||'').toLowerCase();
+  if (h.includes('pix')) return 'PIX';
+  if (h.includes('getnet') || h.includes('cartao') || h.includes('antecipacao') || h.includes('debito')) return 'CARTÃO';
+  if (h.includes('boleto') || h.includes('tar liq') || h.includes('qrcode')) return 'BOLETO';
+  if (h.includes('tarifa') || h.includes('tar ')) return 'TARIFA';
+  if (h.includes('ted') || h.includes('doc')) return 'TED/DOC';
+  if (h.includes('darf')) return 'DARF';
+  if (h.includes('cr cob') || h.includes('recebimento')) return 'COBRANÇA';
+  return 'OUTROS';
 }
 
 // ── PARSERS ───────────────────────────────────────────────────────────────────
 
-function parseSicoob(rows, banco) {
-  const header = rows[0].map(h => String(h||'').trim());
-  const dcIdx  = header.findIndex(h => h === 'D/C');
-  if (dcIdx < 0) throw new Error('Coluna D/C não encontrada.');
-  const result = [];
+// Valori KS / MM
+// Cols: Data Referência | Hora | Tipo | Descrição | Valor Transação | D/C | Saldo após | Saldo Final
+function parseValori(rows, banco) {
+  const out = [];
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    const dc  = String(row[dcIdx]||'').trim();
-    if (!dc) continue;
+    const tipo = String(row[2]||'').trim();
+    const dc   = String(row[5]||'').trim().toUpperCase();
+    if (!tipo || tipo.toLowerCase().includes('saldo do dia') || !dc) continue;
     const data  = parseDate(row[0]);
     const valor = Math.abs(parseNum(row[4]));
-    if (!data || isNaN(valor)) continue;
-    result.push({
-      data,
-      descricao       : String(row[3]||'').trim(),
-      tipo            : dc === 'C' ? 'Entrada' : 'Saída',
+    if (!data || isNaN(valor) || valor === 0) continue;
+    const desc = String(row[3]||tipo).trim();
+    out.push({
+      id: makeId(banco, data, valor, desc),
+      data, banco,
+      tipo: dc === 'C' ? 'Entrada' : 'Saída',
+      condicao: condValori(tipo),
+      descricao: desc,
       valor,
-      saldo           : parseNum(row[6]),
-      banco_origem    : banco,
-      forma_pagamento : inferForma(String(row[2]||''), SICOOB_FORMA),
-      categoria:'', apuracao:'', observacao:'',
+      saldo: parseNum(row[6]),
+      mes: fmtMes(data),
+      alocacao:'', comprovante:'', observacao:''
     });
   }
-  return result;
+  return out;
 }
 
+// Santander
+// Row 0: AGENCIA ... | Row 1: vazia | Row 2: cabeçalho | Row 3+: dados
 function parseSantander(rows, banco) {
-  const result = [];
-  for (let i = 3; i < rows.length; i++) {
+  const out = [];
+  let dataStart = 3;
+  for (let i = 0; i < Math.min(6, rows.length); i++) {
+    if (String(rows[i][0]||'').trim().toLowerCase() === 'data') { dataStart = i+1; break; }
+  }
+  for (let i = dataStart; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || !row[0]) continue;
-    const data     = parseDate(row[0]);
-    const valorRaw = parseNum(row[3]);
-    if (!data || isNaN(valorRaw)) continue;
-    result.push({
-      data,
-      descricao       : String(row[1]||'').trim(),
-      tipo            : valorRaw >= 0 ? 'Entrada' : 'Saída',
-      valor           : Math.abs(valorRaw),
-      saldo           : parseNum(row[4]),
-      banco_origem    : banco,
-      forma_pagamento : inferForma(String(row[1]||''), SANTANDER_FORMA),
-      categoria:'', apuracao:'', observacao:'',
+    if (!row||!row[0]) continue;
+    const data = parseDate(row[0]);
+    const vRaw = parseNum(row[3]);
+    if (!data||isNaN(vRaw)) continue;
+    const hist = String(row[1]||'').trim();
+    out.push({
+      id: makeId(banco, data, vRaw, hist),
+      data, banco,
+      tipo: vRaw >= 0 ? 'Entrada' : 'Saída',
+      condicao: condSant(hist),
+      descricao: hist,
+      valor: Math.abs(vRaw),
+      saldo: parseNum(row[4]),
+      mes: fmtMes(data),
+      alocacao:'', comprovante:'', observacao:''
     });
   }
-  return result;
+  return out;
 }
 
 function detectAndParse(wb, banco) {
-  const X    = getX();
-  const rows = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
-    header:1, defval:'', raw:true, cellDates:true
-  });
-  if (!rows.length) throw new Error('Arquivo sem dados.');
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = window.XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:true, cellDates:true});
+  if (!rows.length) throw new Error('Arquivo vazio.');
   const first = String(rows[0][0]||'').trim().toUpperCase();
   if (first === 'AGENCIA') return parseSantander(rows, banco);
-  if (rows[0].map(h=>String(h).trim()).includes('D/C')) return parseSicoob(rows, banco);
-  throw new Error('Formato não reconhecido.');
+  if (first === 'DATA REFERÊNCIA' || first === 'DATA REFERENCIA' || first === 'DATA REFERÊNCIA') return parseValori(rows, banco);
+  const headers = rows[0].map(h => String(h).trim().toUpperCase());
+  if (headers.includes('D/C')) return parseValori(rows, banco);
+  throw new Error(`Formato não reconhecido ("${rows[0][0]}").`);
+}
+
+// ERP
+// Rows 0-4: info | Row 5: headers (+/-...) | Row 6+: dados
+function docCorrigido(profissional, documento, conta) {
+  const p = (profissional||'').toUpperCase();
+  const d = (documento||'').trim();
+  const c = (conta||'').toUpperCase();
+  if (p.includes('CIMRAD') && d === 'Outros') return 'Cimrad';
+  if (p.includes('CENTER X') && d === 'Outros') return 'Center X';
+  if (c.includes('SICOOB')) return 'SICOOB';
+  return d || 'N/A';
+}
+
+function parseERP(wb) {
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = window.XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:true, cellDates:true});
+  let hdrRow = -1;
+  for (let i = 0; i < Math.min(10, rows.length); i++) {
+    if (String(rows[i][0]).trim() === '+/-') { hdrRow = i; break; }
+  }
+  if (hdrRow < 0) throw new Error('Header ERP não encontrado (coluna +/-).');
+  const out = [];
+  for (let i = hdrRow+1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r[0] && !r[13]) continue;
+    const pag   = parseDate(r[13]);
+    const total = parseNum(r[21]);
+    if (!pag || isNaN(total)) continue;
+    out.push({
+      sinal:             String(r[0]||'').trim(),
+      conta_bancaria:    String(r[1]||'').trim(),
+      cat_relatorio:     String(r[2]||'').trim(),
+      cat_faturamento:   String(r[3]||'').trim(),
+      cliente_fornecedor:String(r[8]||'').trim(),
+      descricao:         String(r[9]||'').trim(),
+      pagamento:         pag,
+      documento:         String(r[15]||'').trim(),
+      doc_corrigido:     docCorrigido(r[17], r[15], r[1]),
+      profissional:      String(r[17]||'').trim(),
+      valor_titulo:      parseNum(r[18]),
+      desconto:          parseNum(r[19]),
+      acrescimo:         parseNum(r[20]),
+      total,
+      mes:               fmtMes(pag)
+    });
+  }
+  return out;
 }
 
 // ── PIPELINE ──────────────────────────────────────────────────────────────────
-
 function pipeline(todos) {
   todos.sort((a,b) => b.data - a.data);
   const seen = new Set();
   for (const r of todos) {
-    const k = [r.banco_origem.toUpperCase(), fmtDate(r.data),
-                r.valor.toFixed(2), r.descricao.slice(0,30).toUpperCase()].join('|');
-    if (seen.has(k)) r.observacao = 'Possível duplicata';
-    else seen.add(k);
+    r.duplicata = seen.has(r.id);
+    if (!r.duplicata) seen.add(r.id);
   }
   return todos;
 }
 
-// ── GERAR EXCEL ───────────────────────────────────────────────────────────────
+// ── FILE UI ───────────────────────────────────────────────────────────────────
+function dzOver(e,k){ e.preventDefault(); document.getElementById('dz-'+k).classList.add('drag-over'); }
+function dzOut(k){ document.getElementById('dz-'+k).classList.remove('drag-over'); }
+function dzDrop(e,k){ e.preventDefault(); dzOut(k); const f=e.dataTransfer.files[0]; if(f) setFile(k,f); }
+function onFile(k){ const i=document.getElementById('f-'+k); if(i.files[0]) setFile(k,i.files[0]); }
 
-async function gerarExcel(linhas) {
-  const wb  = new ExcelJS.Workbook();
-  wb.creator = 'Clínica Meu Médico';
-  const ws  = wb.addWorksheet('Conciliação', {
-    properties: { tabColor: { argb: 'FF1B6B5A' } },
-  });
-  const NC  = COLUNAS.length;
-  const FMT_VALOR = '"R$ "#,##0.00;[Red]-"R$ "#,##0.00';
-
-  const a   = hex => 'FF' + hex;
-  const fill = hex => ({ type: 'pattern', pattern: 'solid', fgColor: { argb: a(hex) } });
-  const fnt  = (hex, sz, bold) => ({ name: 'Calibri', size: sz, bold: !!bold, color: { argb: a(hex) } });
-  const brd  = (style, hex) => { const s = { style, color: { argb: a(hex) } }; return { top:s, bottom:s, left:s, right:s }; };
-
-  const bGreen = brd('medium', '0D5E4A');
-  const bGray  = brd('thin',   'C5D8D4');
-  const bDark  = brd('medium', '0A2E22');
-
-  function styleCell(c, fillHex, fontHex, fontSz, bold, al, border, numFmt) {
-    c.fill      = fill(fillHex);
-    c.font      = fnt(fontHex, fontSz, bold);
-    c.alignment = { horizontal: al, vertical: 'middle', wrapText: false };
-    c.border    = border;
-    if (numFmt) c.numFmt = numFmt;
-  }
-
-  function fillRowStyle(ri, fillHex, fontHex, fontSz, bold, border) {
-    for (let ci = 1; ci <= NC; ci++) {
-      styleCell(ws.getCell(ri, ci), fillHex, fontHex, fontSz, bold, 'center', border);
-    }
-  }
-
-  ws.columns = COLUNAS.map(({ wch }) => ({ width: wch }));
-
-  const datas   = linhas.map(r => r.data).filter(Boolean);
-  const dMin    = fmtDate(new Date(Math.min(...datas)));
-  const dMax    = fmtDate(new Date(Math.max(...datas)));
-  const entradas = linhas.filter(r => r.tipo === 'Entrada');
-  const saidas   = linhas.filter(r => r.tipo === 'Saída');
-  const sumEnt   = entradas.reduce((s, r) => s + (isNaN(r.valor) ? 0 : r.valor), 0);
-  const sumSai   = saidas.reduce((s, r)   => s + (isNaN(r.valor) ? 0 : r.valor), 0);
-  const saldoLiq = sumEnt - sumSai;
-  const fBRL     = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  // ROW 1: Título
-  ws.getRow(1).height = 30;
-  ws.mergeCells(1, 1, 1, NC);
-  const cTitle = ws.getCell(1, 1);
-  cTitle.value = 'CONCILIAÇÃO BANCÁRIA — CLÍNICA MEU MÉDICO';
-  styleCell(cTitle, '0D3B2E', 'FFFFFF', 14, true, 'center', bGreen);
-
-  // ROW 2: Período
-  ws.getRow(2).height = 18;
-  ws.mergeCells(2, 1, 2, NC);
-  const cPer = ws.getCell(2, 1);
-  cPer.value = `Período: ${dMin} a ${dMax}   |   ${linhas.length} lançamentos   |   Entradas: ${fBRL(sumEnt)}   |   Saídas: ${fBRL(sumSai)}   |   Saldo: ${fBRL(saldoLiq)}`;
-  styleCell(cPer, '1B6B5A', 'D1FAE5', 10, false, 'center', bGreen);
-
-  // ROW 3: Cabeçalho
-  ws.getRow(3).height = 24;
-  COLUNAS.forEach(({ nome }, ci) => {
-    const c = ws.getCell(3, ci + 1);
-    c.value = nome;
-    styleCell(c, '227A67', 'FFFFFF', 10, true, 'center', bGreen);
-  });
-
-  // ROWS 4+: Dados
-  linhas.forEach((row, idx) => {
-    const ri    = 4 + idx;
-    const isEnt = row.tipo === 'Entrada';
-    const isOdd = idx % 2 === 1;
-    const bg    = isEnt ? (isOdd ? 'F0FAF8' : 'FFFFFF') : (isOdd ? 'FEF2F2' : 'FFF8F8');
-    ws.getRow(ri).height = 18;
-
-    const valorNum = (row.valor == null || isNaN(row.valor)) ? null : (isEnt ? row.valor : -row.valor);
-    const saldoNum = (row.saldo == null || isNaN(row.saldo)) ? null : row.saldo;
-
-    const defs = [
-      [row.data,                'center', 'DD/MM/YYYY'],
-      [row.descricao,           'left',   null],
-      [row.tipo,                'center', null],
-      [valorNum,                'right',  FMT_VALOR],
-      [saldoNum,                'right',  FMT_VALOR],
-      [row.banco_origem,        'left',   null],
-      [row.forma_pagamento||'', 'left',   null],
-      [row.categoria||'',       'left',   null],
-      [row.apuracao||'',        'left',   null],
-      [row.observacao||'',      'left',   null],
-    ];
-
-    defs.forEach(([v, al, fmt], ci) => {
-      const c = ws.getCell(ri, ci + 1);
-      c.value = v ?? null;
-      styleCell(c, bg, '111827', 10, false, al, bGray, fmt);
-    });
-  });
-
-  // Totais
-  const baseT = 4 + linhas.length + 1;
-  const totalDefs = [
-    { label: `TOTAL ENTRADAS  —  ${entradas.length} lançamentos`, valor: sumEnt,   bg: '166534' },
-    { label: `TOTAL SAÍDAS  —  ${saidas.length} lançamentos`,     valor: sumSai,   bg: '991B1B' },
-    { label: `SALDO LÍQUIDO DO PERÍODO`,                            valor: saldoLiq, bg: saldoLiq >= 0 ? '14532D' : '7F1D1D' },
-  ];
-
-  totalDefs.forEach(({ label, valor, bg }, i) => {
-    const ri = baseT + i;
-    ws.getRow(ri).height = 22;
-    fillRowStyle(ri, bg, 'FFFFFF', 11, true, bDark);
-    const lc = ws.getCell(ri, 2);
-    lc.value     = label;
-    lc.alignment = { horizontal: 'right', vertical: 'middle' };
-    const vc = ws.getCell(ri, 4);
-    vc.value  = valor;
-    vc.numFmt = FMT_VALOR;
-    vc.alignment = { horizontal: 'right', vertical: 'middle' };
-  });
-
-  ws.views      = [{ state: 'frozen', ySplit: 3, topLeftCell: 'A4' }];
-  ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: NC } };
-
-  const buffer = await wb.xlsx.writeBuffer();
-  return buffer;
+function setFile(k, file) {
+  S.files[k] = file;
+  document.getElementById('dz-'+k).style.display = 'none';
+  const chip = document.getElementById('chip-'+k);
+  chip.classList.add('on');
+  document.getElementById('chip-'+k+'-n').textContent = file.name;
+  document.getElementById('slot-'+k).classList.add('has-file');
 }
-
-// ── DOWNLOAD ──────────────────────────────────────────────────────────────────
-
-function downloadExcel() {
-  if (!state.excelBytes) return;
-  const blob = new Blob([state.excelBytes], {
-    type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const a = Object.assign(document.createElement('a'),
-    {href:URL.createObjectURL(blob), download:'conciliacao_bancaria.xlsx'});
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-// ── RESULTS UI ────────────────────────────────────────────────────────────────
-
-const PAGE_SIZE = 60;
-let _filtroTipo = 'todos';
-let _filtroPage = PAGE_SIZE;
-let _resultado  = [];
-
-function mostrarResultados(resultado, log) {
-  _resultado  = resultado;
-  _filtroTipo = 'todos';
-  _filtroPage = PAGE_SIZE;
-
-  const entradas = resultado.filter(r => r.tipo === 'Entrada');
-  const saidas   = resultado.filter(r => r.tipo === 'Saída');
-  const dupls    = resultado.filter(r => r.observacao === 'Possível duplicata');
-  const sumE = entradas.reduce((s, r) => s + r.valor, 0);
-  const sumS = saidas.reduce((s, r)   => s + r.valor, 0);
-  const saldo = sumE - sumS;
-
-  const datas = resultado.map(r => r.data).filter(Boolean);
-  const dMin  = fmtDate(new Date(Math.min(...datas)));
-  const dMax  = fmtDate(new Date(Math.max(...datas)));
-
-  // KPIs
-  const elSaldo = document.getElementById('kpi-saldo');
-  elSaldo.textContent = fmtBRL(saldo);
-  elSaldo.className   = 'kpi-value ' + (saldo >= 0 ? 'positivo' : 'negativo');
-  document.getElementById('kpi-periodo').textContent    = dMin + ' até ' + dMax;
-  document.getElementById('kpi-entradas').textContent   = fmtBRL(sumE);
-  document.getElementById('kpi-entradas-n').textContent = entradas.length.toLocaleString('pt-BR') + ' transações';
-  document.getElementById('kpi-saidas').textContent     = fmtBRL(sumS);
-  document.getElementById('kpi-saidas-n').textContent   = saidas.length.toLocaleString('pt-BR') + ' transações';
-  document.getElementById('kpi-total').textContent      = resultado.length.toLocaleString('pt-BR');
-  document.getElementById('kpi-dupl').textContent       = dupls.length
-    ? dupls.length + ' possíveis duplicatas'
-    : 'sem duplicatas';
-
-  // Breakdown por banco
-  const bancos = [...new Set(resultado.map(r => r.banco_origem))];
-  const grid = document.getElementById('banco-grid');
-  grid.innerHTML = '';
-  for (const banco of bancos) {
-    const rows = resultado.filter(r => r.banco_origem === banco);
-    const bE   = rows.filter(r => r.tipo === 'Entrada').reduce((s, r) => s + r.valor, 0);
-    const bS   = rows.filter(r => r.tipo === 'Saída').reduce((s, r)   => s + r.valor, 0);
-    const card = document.createElement('div');
-    card.className = 'banco-card';
-    card.innerHTML = `
-      <div class="banco-card-name">${banco}</div>
-      <div class="banco-card-row"><span>Lançamentos</span><span>${rows.length}</span></div>
-      <div class="banco-card-row"><span>Entradas</span><span class="val-e">${fmtBRL(bE)}</span></div>
-      <div class="banco-card-row"><span>Saídas</span><span class="val-s">${fmtBRL(bS)}</span></div>
-    `;
-    grid.appendChild(card);
-  }
-
-  // Log de erros (só mostra se houver algum erro)
-  const erros = log.filter(l => l.err);
-  const fileLog = document.getElementById('file-log');
-  if (erros.length) {
-    fileLog.style.display = '';
-    const logWrap = document.getElementById('file-log-rows');
-    logWrap.innerHTML = '';
-    for (const {banco, err} of erros) {
-      const row = document.createElement('div');
-      row.className = 'file-log-row';
-      row.innerHTML = `
-        <div class="log-status err"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
-        <span class="log-banco">${banco}</span>
-        <span class="log-msg">${err}</span>`;
-      logWrap.appendChild(row);
-    }
-  } else {
-    fileLog.style.display = 'none';
-  }
-
-  // Reset pills
-  ['todos','entrada','saida','duplicata'].forEach(p => {
-    document.getElementById('pill-' + p).classList.remove('active');
-  });
-  document.getElementById('pill-todos').classList.add('active');
-  document.getElementById('search-input').value = '';
-
-  renderTabela();
-
-  document.getElementById('results').classList.add('visible');
-  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function renderTabela() {
-  const busca = (document.getElementById('search-input').value || '').trim().toLowerCase();
-
-  let linhas = _resultado;
-
-  if (_filtroTipo === 'entrada')   linhas = linhas.filter(r => r.tipo === 'Entrada');
-  if (_filtroTipo === 'saida')     linhas = linhas.filter(r => r.tipo === 'Saída');
-  if (_filtroTipo === 'duplicata') linhas = linhas.filter(r => r.observacao === 'Possível duplicata');
-
-  if (busca) {
-    linhas = linhas.filter(r =>
-      r.descricao.toLowerCase().includes(busca) ||
-      r.banco_origem.toLowerCase().includes(busca) ||
-      (r.forma_pagamento || '').toLowerCase().includes(busca)
-    );
-  }
-
-  const total   = linhas.length;
-  const visivel = linhas.slice(0, _filtroPage);
-
-  document.getElementById('table-count').textContent =
-    total === _resultado.length
-      ? `${total.toLocaleString('pt-BR')} lançamentos`
-      : `${total.toLocaleString('pt-BR')} de ${_resultado.length.toLocaleString('pt-BR')} lançamentos`;
-
-  const tbody = document.getElementById('tabela-body');
-  tbody.innerHTML = '';
-
-  for (const r of visivel) {
-    const tr = document.createElement('tr');
-    if (r.observacao === 'Possível duplicata') tr.className = 'row-dupl';
-    const isE = r.tipo === 'Entrada';
-    tr.innerHTML = `
-      <td style="white-space:nowrap">${fmtDate(r.data)}</td>
-      <td class="col-desc"><span class="td-desc-text" title="${r.descricao}">${r.descricao}</span></td>
-      <td style="white-space:nowrap">${r.banco_origem}</td>
-      <td>${r.forma_pagamento || '—'}</td>
-      <td><span class="badge ${isE ? 'badge-e' : 'badge-s'}">${r.tipo}</span>${r.observacao === 'Possível duplicata' ? ' <span class="badge badge-d">DUPL</span>' : ''}</td>
-      <td class="col-r ${isE ? 'val-e' : 'val-s'}">${fmtBRL(r.valor)}</td>
-      <td class="col-r" style="color:var(--gray-500)">${isNaN(r.saldo) || r.saldo == null ? '—' : fmtBRL(r.saldo)}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-
-  const btnMais = document.getElementById('btn-ver-mais');
-  if (total > _filtroPage) {
-    btnMais.style.display = '';
-    btnMais.textContent = `Ver mais lançamentos… (${total - _filtroPage} restantes)`;
-  } else {
-    btnMais.style.display = 'none';
-  }
-}
-
-function filtrarTabela() {
-  _filtroPage = PAGE_SIZE;
-  renderTabela();
-}
-
-function setPill(tipo) {
-  _filtroTipo = tipo;
-  _filtroPage = PAGE_SIZE;
-  ['todos','entrada','saida','duplicata'].forEach(p => {
-    document.getElementById('pill-' + p).classList.remove('active');
-  });
-  document.getElementById('pill-' + tipo).classList.add('active');
-  renderTabela();
-}
-
-function verMais() {
-  _filtroPage += PAGE_SIZE;
-  renderTabela();
-}
-
-// ── MAIN ─────────────────────────────────────────────────────────────────────
-
-async function processar() {
-  const btn = document.getElementById('btn');
-  const btnOriginal = btn.innerHTML;
-
-  const slots = [1,2,3].map(n => ({
-    n, file: state.files[n], banco: document.getElementById('banco'+n).value
-  })).filter(s => s.file);
-
-  if (!slots.length) {
-    btn.textContent = '⚠ Selecione ao menos um arquivo';
-    setTimeout(() => { btn.innerHTML = btnOriginal; }, 2500);
-    return;
-  }
-
-  const semBanco = slots.filter(s => !s.banco);
-  if (semBanco.length) {
-    btn.textContent = '⚠ Selecione o banco para cada arquivo';
-    setTimeout(() => { btn.innerHTML = btnOriginal; }, 2500);
-    return;
-  }
-
-  if (!getX()) {
-    btn.textContent = '⚠ Biblioteca offline — recarregue a página';
-    setTimeout(() => { btn.innerHTML = btnOriginal; }, 3000);
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Processando…';
-
-  try {
-    const todos = [];
-    const log   = [];
-
-    for (const {file, banco} of slots) {
-      try {
-        const wb   = await lerArquivo(file);
-        const rows = detectAndParse(wb, banco);
-        if (!rows.length) throw new Error('Nenhuma transação encontrada.');
-        todos.push(...rows);
-        log.push({banco, count: rows.length});
-      } catch(e) {
-        log.push({banco: banco || file.name, count:0, err: e.message});
-      }
-    }
-
-    if (!todos.length) {
-      btn.textContent = '⚠ Nenhum dado válido — verifique os arquivos';
-      setTimeout(() => { btn.innerHTML = btnOriginal; btn.disabled = false; }, 3500);
-      return;
-    }
-
-    const resultado  = pipeline(todos);
-
-    try {
-      state.excelBytes = await gerarExcel(resultado);
-    } catch(e) {
-      console.error('gerarExcel falhou:', e);
-      state.excelBytes = null;
-    }
-
-    mostrarResultados(resultado, log);
-
-    if (state.excelBytes) downloadExcel();
-
-  } catch(e) {
-    console.error('Erro no processamento:', e);
-    btn.textContent = '⚠ Erro inesperado — veja o console';
-    setTimeout(() => { btn.innerHTML = btnOriginal; btn.disabled = false; }, 4000);
-    return;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = btnOriginal;
-  }
+function clearFile(k) {
+  delete S.files[k];
+  document.getElementById('f-'+k).value = '';
+  document.getElementById('dz-'+k).style.display = '';
+  document.getElementById('chip-'+k).classList.remove('on');
+  document.getElementById('slot-'+k).classList.remove('has-file');
 }
 
 function lerArquivo(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const X  = getX();
-        resolve(X.read(new Uint8Array(e.target.result), {type:'array', cellDates:true}));
-      } catch(err) { reject(new Error('Falha ao ler: ' + err.message)); }
+  return new Promise((ok,err) => {
+    const r = new FileReader();
+    r.onload = e => {
+      try { ok(window.XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true})); }
+      catch(ex) { err(new Error('Falha ao ler: '+ex.message)); }
     };
-    reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
-    reader.readAsArrayBuffer(file);
+    r.onerror = () => err(new Error('Erro ao ler arquivo.'));
+    r.readAsArrayBuffer(file);
   });
 }
+
+// ── PROCESSAR ─────────────────────────────────────────────────────────────────
+const BANCO_MAP = { vks:'VALORI BANK KS', vmm:'VALORI BANK MM', sant:'SANTANDER' };
+
+async function processar() {
+  const btn = document.getElementById('btn-proc');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processando…';
+  document.getElementById('erros-box').innerHTML = '';
+
+  const bancoKeys = ['vks','vmm','sant'];
+  if (!bancoKeys.some(k => S.files[k])) {
+    document.getElementById('erros-box').innerHTML = '<div class="alert alert-err">Selecione ao menos um extrato bancário.</div>';
+    btn.disabled = false; btn.innerHTML = orig; return;
+  }
+
+  try {
+    const todos = [], erros = [];
+    for (const k of bancoKeys) {
+      if (!S.files[k]) continue;
+      try {
+        const wb = await lerArquivo(S.files[k]);
+        const rows = detectAndParse(wb, BANCO_MAP[k]);
+        if (!rows.length) throw new Error('Nenhuma transação encontrada.');
+        todos.push(...rows);
+      } catch(e) { erros.push(`${BANCO_MAP[k]}: ${e.message}`); }
+    }
+
+    S.erp = [];
+    if (S.files['erp']) {
+      try {
+        const wb = await lerArquivo(S.files['erp']);
+        S.erp = parseERP(wb);
+      } catch(e) { erros.push(`ERP: ${e.message}`); }
+    }
+
+    if (erros.length) {
+      document.getElementById('erros-box').innerHTML =
+        erros.map(e => `<div class="alert alert-err">${e}</div>`).join('');
+    }
+
+    if (!todos.length) { btn.disabled=false; btn.innerHTML=orig; return; }
+
+    S.lanc = pipeline(todos);
+    mostrar();
+    document.getElementById('results').classList.add('on');
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('erros-box').innerHTML = `<div class="alert alert-err">Erro inesperado: ${e.message}</div>`;
+  }
+  btn.disabled = false; btn.innerHTML = orig;
+}
+
+// ── RESULTADOS UI ─────────────────────────────────────────────────────────────
+const PAGE = 80;
+let fTipo = 'todos', fPag = PAGE, erpPag = PAGE;
+
+function mostrar() {
+  const lanc = S.lanc;
+  const ent  = lanc.filter(r => r.tipo === 'Entrada');
+  const sai  = lanc.filter(r => r.tipo === 'Saída');
+  const sumE = ent.reduce((s,r) => s+r.valor, 0);
+  const sumS = sai.reduce((s,r) => s+r.valor, 0);
+  const saldo = sumE - sumS;
+  const datas = lanc.map(r=>r.data).filter(Boolean);
+  const dMin  = fmtDate(new Date(Math.min(...datas)));
+  const dMax  = fmtDate(new Date(Math.max(...datas)));
+
+  const elS = document.getElementById('k-saldo');
+  elS.textContent = fmtBRL(saldo);
+  elS.className = 'kpi-val ' + (saldo>=0?'pos':'neg');
+  document.getElementById('k-periodo').textContent = `${dMin} a ${dMax}`;
+  document.getElementById('k-ent').textContent = fmtBRL(sumE);
+  document.getElementById('k-ent-n').textContent = ent.length.toLocaleString('pt-BR')+' transações';
+  document.getElementById('k-sai').textContent = fmtBRL(sumS);
+  document.getElementById('k-sai-n').textContent = sai.length.toLocaleString('pt-BR')+' transações';
+  document.getElementById('k-tot').textContent = lanc.length.toLocaleString('pt-BR');
+  const bancos = [...new Set(lanc.map(r=>r.banco))];
+  document.getElementById('k-bancos').textContent = bancos.length+' banco(s)';
+
+  if (S.erp.length) {
+    const et = S.erp.reduce((s,r)=>s+(r.total||0),0);
+    document.getElementById('k-erp').textContent = S.erp.length.toLocaleString('pt-BR');
+    document.getElementById('k-erp-tot').textContent = fmtBRL(et)+' total';
+  } else {
+    document.getElementById('k-erp').textContent = '—';
+    document.getElementById('k-erp-tot').textContent = 'não carregado';
+  }
+
+  const grid = document.getElementById('banco-grid');
+  grid.innerHTML = '';
+  for (const banco of bancos) {
+    const rows = lanc.filter(r=>r.banco===banco);
+    const bE = rows.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const bS = rows.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const bSaldo = bE-bS;
+    const card = document.createElement('div');
+    card.className = 'banco-card';
+    card.innerHTML = `
+      <div class="banco-name">${banco}</div>
+      <div class="banco-row"><span>Lançamentos</span><span class="vn">${rows.length}</span></div>
+      <div class="banco-row"><span>Entradas</span><span class="ve">${fmtBRL(bE)}</span></div>
+      <div class="banco-row"><span>Saídas</span><span class="vs">${fmtBRL(bS)}</span></div>
+      <div class="banco-row"><span>Saldo</span><span class="${bSaldo>=0?'ve':'vs'}">${fmtBRL(bSaldo)}</span></div>`;
+    grid.appendChild(card);
+  }
+
+  fTipo = 'todos'; fPag = PAGE;
+  ['todos','entrada','saida'].forEach(p => document.getElementById('pill-'+p).classList.remove('on'));
+  document.getElementById('pill-todos').classList.add('on');
+  document.getElementById('search').value = '';
+  renderTabela();
+
+  if (S.erp.length) { document.getElementById('erp-sec').style.display=''; renderERP(); }
+  else document.getElementById('erp-sec').style.display='none';
+}
+
+function renderTabela() {
+  const busca = (document.getElementById('search').value||'').toLowerCase().trim();
+  let linhas = S.lanc;
+  if (fTipo === 'entrada') linhas = linhas.filter(r=>r.tipo==='Entrada');
+  if (fTipo === 'saida')   linhas = linhas.filter(r=>r.tipo==='Saída');
+  if (busca) linhas = linhas.filter(r =>
+    r.descricao.toLowerCase().includes(busca) ||
+    r.banco.toLowerCase().includes(busca) ||
+    r.condicao.toLowerCase().includes(busca)
+  );
+
+  const total = linhas.length;
+  document.getElementById('count').textContent =
+    total === S.lanc.length
+      ? `${total.toLocaleString('pt-BR')} lançamentos`
+      : `${total.toLocaleString('pt-BR')} de ${S.lanc.length.toLocaleString('pt-BR')} lançamentos`;
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  for (const r of linhas.slice(0, fPag)) {
+    const isE = r.tipo === 'Entrada';
+    const condBg  = isE ? '#E0F2FE' : '#FEF3C7';
+    const condCol = isE ? '#0369A1' : '#92400E';
+    const tr = document.createElement('tr');
+    if (r.duplicata) tr.style.background = '#FFFBEB';
+    tr.innerHTML = `
+      <td style="white-space:nowrap">${fmtDate(r.data)}</td>
+      <td style="white-space:nowrap;font-size:11px">${r.banco}</td>
+      <td><span style="font-size:11px;background:${condBg};color:${condCol};padding:2px 8px;border-radius:20px;font-weight:600">${r.condicao}</span></td>
+      <td><span class="td-clip" title="${r.descricao.replace(/"/g,'&quot;')}">${r.descricao}</span></td>
+      <td><span class="badge ${isE?'badge-e':'badge-s'}">${r.tipo}</span>${r.duplicata?' <span style="font-size:10px;color:#92400E;font-weight:700">DUPL</span>':''}</td>
+      <td class="r ${isE?'val-e':'val-s'}">${fmtBRL(r.valor)}</td>
+      <td class="r" style="color:var(--gray500)">${isNaN(r.saldo)||r.saldo==null?'—':fmtBRL(r.saldo)}</td>
+      <td style="white-space:nowrap;font-size:11px;color:var(--gray500)">${r.mes}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  const btn = document.getElementById('btn-more');
+  if (total > fPag) { btn.style.display=''; btn.textContent=`Ver mais (${total-fPag} restantes)…`; }
+  else btn.style.display='none';
+}
+
+function renderERP() {
+  const erp = S.erp;
+  document.getElementById('erp-count').textContent = `${erp.length.toLocaleString('pt-BR')} registros ERP`;
+  const contas = [...new Set(erp.map(r=>r.conta_bancaria))];
+  const grid = document.getElementById('erp-grid');
+  grid.innerHTML = '';
+  for (const conta of contas) {
+    const rows = erp.filter(r=>r.conta_bancaria===conta);
+    const tot  = rows.reduce((s,r)=>s+(r.total||0),0);
+    const card = document.createElement('div');
+    card.className = 'erp-card';
+    card.innerHTML = `
+      <div class="erp-name">${conta}</div>
+      <div class="erp-row"><span>Registros</span><span class="vn">${rows.length}</span></div>
+      <div class="erp-row"><span>Total</span><span class="vn">${fmtBRL(tot)}</span></div>`;
+    grid.appendChild(card);
+  }
+
+  const tbody = document.getElementById('erp-tbody');
+  tbody.innerHTML = '';
+  for (const r of erp.slice(0, erpPag)) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:11px;white-space:nowrap">${r.conta_bancaria}</td>
+      <td style="font-size:11px">${r.cat_faturamento}</td>
+      <td><span class="td-clip" style="max-width:180px" title="${r.cliente_fornecedor}">${r.cliente_fornecedor}</span></td>
+      <td style="white-space:nowrap">${fmtDate(r.pagamento)}</td>
+      <td style="font-size:11px">${r.doc_corrigido}</td>
+      <td><span class="td-clip" style="max-width:150px" title="${r.profissional}">${r.profissional}</span></td>
+      <td class="r">${fmtBRL(r.valor_titulo)}</td>
+      <td class="r" style="color:var(--red600)">${r.desconto>0?fmtBRL(r.desconto):'—'}</td>
+      <td class="r val-e">${fmtBRL(r.total)}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  const btn = document.getElementById('erp-more');
+  if (erp.length > erpPag) { btn.style.display=''; btn.textContent=`Ver mais ERP (${erp.length-erpPag} restantes)…`; }
+  else btn.style.display='none';
+}
+
+function filtrar() { fPag = PAGE; renderTabela(); }
+function verMais() { fPag += PAGE; renderTabela(); }
+function verMaisErp() { erpPag += PAGE; renderERP(); }
+
+function setPill(tipo) {
+  fTipo = tipo; fPag = PAGE;
+  ['todos','entrada','saida'].forEach(p => document.getElementById('pill-'+p).classList.remove('on'));
+  document.getElementById('pill-'+tipo).classList.add('on');
+  renderTabela();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const badge  = document.getElementById('lib-badge');
+  const hasXLS = !!window.XLSX;
+  const hasEXL = !!window.ExcelJS;
+  if (hasXLS && hasEXL) { badge.textContent='✓ Libs ok'; badge.className='lib-badge ok'; }
+  else if (!hasXLS)     { badge.textContent='⚠ SheetJS offline'; badge.className='lib-badge err'; document.getElementById('btn-proc').disabled=true; }
+  else                  { badge.textContent='⚠ ExcelJS offline'; badge.className='lib-badge err'; }
+  loadCats();
+});
 </script>
 </body>
 </html>

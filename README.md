@@ -1,45 +1,38 @@
 # 🏥 Clínica Meu Médico - Portal de Automações
 
-Sistema profissional para comparação e análise de exames médicos entre clínica e laboratórios parceiros.
+Sistema de automações financeiras e operacionais desenvolvido em HTML/JS puro (100% no navegador, sem servidor).
 
 ## 🚀 Demo ao Vivo
 
-👉 **[Acesse o Sistema](https://seuusuario.github.io/clinica-meu-medico/)**
-
-## 📸 Preview
-
-![Portal de Automações](https://via.placeholder.com/800x400/26a69a/ffffff?text=Portal+de+Automações)
-
-*Portal principal com grid de parceiros*
+👉 **[Acesse o Sistema](https://mateusm23.github.io/clinica-meu-medico/)**
 
 ---
 
-## 🎯 Funcionalidades
+## 🎯 Módulos
 
-### ✅ Portal de Parceiros
-- Interface profissional com 9 parceiros
+### ✅ Módulo Financeiro (`financeiro.html`)
+Mini sistema integrado de conciliação bancária mensal.
+
+- Upload de extratos bancários: **Valori KS**, **Valori MM**, **Santander**
+- Upload do relatório ERP de consultas (opcional, informacional)
+- Detecção automática de formato de cada banco
+- Deduplicação de lançamentos por chave única
+- Plano de Contas gerenciável (localStorage) com 28 categorias padrão
+- Preview interativo com filtros por tipo e busca por descrição
+- **Geração de Excel** com 3 abas:
+  - **LISTAS** — Plano de Contas completo (fonte dos dropdowns)
+  - **APURAÇÃO** — Lançamentos com fórmulas INDEX/MATCH, dropdown de ALOCAÇÃO e formatação condicional
+  - **ERP** — 9 colunas simplificadas do relatório de consultas
+- Fórmulas compatíveis com Excel 2016/2019
+
+### ✅ Portal de Parceiros (`index.html`)
+- Interface com 9 parceiros de laboratório
 - Sistema modular (1 ativo + 8 em desenvolvimento)
-- Design responsivo e intuitivo
 
-### ✅ Comparador DB Diagnóstico
-- **Upload e processamento** de planilhas Excel (.xlsx, .xls)
-- **Comparação automática** entre dados da clínica e laboratório
-- **Busca interativa** de pacientes em tempo real
-- **Exportação formatada** com cores, bordas e formatação condicional
-- **Análise de divergências** com destaque visual
-- **5 abas no Excel** gerado:
-  1. Clínica Original
-  2. Clínica Expandido
-  3. Laboratório Original
-  4. Comparação Completa
-  5. Resumo de Divergências
-
-### ✅ Painel de Análise Interativa
-- Busca de pacientes por nome
-- Estatísticas em tempo real
-- Comparação sintética lado a lado
-- Visualização completa de dados originais
-- Botões para copiar tabelas (formato Excel/Word)
+### ✅ Comparador DB Diagnóstico (`comparador-db.html`)
+- Upload e comparação de planilhas clínica × laboratório
+- Busca interativa de pacientes
+- Exportação formatada com 5 abas
 
 ---
 
@@ -84,13 +77,13 @@ Copie tabelas específicas conforme necessário
 ## 📂 Estrutura do Projeto
 
 ```
-DEPLOY/
-├── index.html              # Portal principal
-├── comparador-db.html      # Sistema DB Diagnóstico
-├── exemplos/
-│   ├── exemplo-clinica.xlsx
-│   └── exemplo-laboratorio.xlsx
-└── README.md              # Este arquivo
+clinica-meu-medico/
+├── index.html               # Portal principal
+├── financeiro.html          # Módulo Financeiro (conciliação bancária)
+├── comparador-db.html       # Comparador DB Diagnóstico
+├── parceiros.html           # Gestão de parceiros
+├── MODULO-FINANCEIRO.md     # Documentação técnica do módulo financeiro
+└── README.md
 ```
 
 ---
@@ -195,18 +188,22 @@ Este projeto foi desenvolvido exclusivamente para **Clínica Meu Médico**.
 
 ## 🎯 Roadmap
 
+**Módulo Financeiro**
+- [x] Parsers Valori KS / MM / Santander com detecção automática
+- [x] Parser ERP com lógica de DOC CORRIGIDO
+- [x] Deduplicação por chave única
+- [x] Plano de Contas com localStorage (add/edit/delete/restore)
+- [x] Excel: aba LISTAS + aba APURAÇÃO + aba ERP
+- [x] Fórmulas INDEX/MATCH, dropdown ALOCAÇÃO, formatação condicional
+- [ ] Aba RESUMO (SUMIFS por categoria)
+- [ ] Aba FLUXO DE CAIXA (por mês)
+- [ ] Aba CONFERÊNCIA DE SALDOS
+- [ ] Merge incremental (preservar ALOCAÇÃO preenchida)
+
+**Portal de Parceiros**
 - [x] Portal de Parceiros
 - [x] Comparador DB Diagnóstico
-- [x] Busca Interativa
-- [x] Exportação Formatada
-- [ ] Neurocentro (Em desenvolvimento)
-- [ ] Nova Era (Em desenvolvimento)
-- [ ] AME Cardio (Em desenvolvimento)
-- [ ] CEMED (Em desenvolvimento)
-- [ ] São Lucas (Em desenvolvimento)
-- [ ] CIMRAD (Em desenvolvimento)
-- [ ] GT Diagnóstico (Em desenvolvimento)
-- [ ] Center X (Em desenvolvimento)
+- [ ] Neurocentro / Nova Era / AME Cardio / CEMED / São Lucas / CIMRAD / GT Diagnóstico / Center X
 
 ---
 

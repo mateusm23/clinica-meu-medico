@@ -188,6 +188,30 @@
     .btn-gerar{width:100%;padding:15px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--g900);color:#fff;border:none;border-radius:var(--rmd);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:20px}
     .btn-gerar:hover:not(:disabled){background:var(--g700)}
     .btn-gerar:disabled{background:var(--gray300);color:var(--gray500);cursor:not-allowed}
+
+    /* ── MERGE INCREMENTAL ── */
+    .panel-merge .panel-hdr{cursor:pointer;user-select:none}
+    .panel-merge .panel-hdr:hover{background:var(--g50)}
+    .merge-body{padding:20px 24px 24px;display:none}
+    .merge-body.open{display:block}
+    .merge-info{font-size:13px;color:var(--gray500);margin-bottom:16px;line-height:1.6}
+    .merge-slot{max-width:320px}
+    .merge-stats-inline{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 16px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:var(--rsm);font-size:13px;font-weight:600;color:#5B21B6}
+    .merge-restored-alert{padding:10px 16px;border-radius:var(--rsm);background:#F5F3FF;border-left:3px solid #7C3AED;font-size:13px;font-weight:500;color:#5B21B6;margin-bottom:12px}
+    /* ── CONFERÊNCIA ── */
+    .conf-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--rsm);font-size:13px;font-weight:600;margin-bottom:12px}
+    .conf-ok{background:#DCFCE7;color:#166534;border:1px solid #BBF7D0}
+    .conf-warn{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA}
+    .conf-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+    .conf-tbl thead th{background:var(--g900);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;white-space:nowrap;text-align:right}
+    .conf-tbl thead th:first-child{text-align:left}
+    .conf-tbl tbody tr{border-bottom:1px solid var(--gray100);transition:background .1s}
+    .conf-tbl tbody tr:hover{background:var(--g50)}
+    .conf-tbl td{padding:8px 12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--gray700)}
+    .conf-tbl td:first-child{text-align:left;font-weight:600;color:var(--gray900)}
+    .c-ok{color:#166534;font-weight:700}
+    .c-err{color:#991B1B;font-weight:700}
+    .c-err-row td{background:#FFF5F5!important}
   </style>
 </head>
 <body>
@@ -318,6 +342,44 @@
     </div>
   </div>
 
+  <!-- MERGE INCREMENTAL -->
+  <div class="panel panel-merge">
+    <div class="panel-hdr" onclick="toggleMerge()">
+      <div class="panel-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="#1B6B5A"/>
+        </svg>
+      </div>
+      <div><h2>Merge Incremental</h2><p>Restaure alocações de uma planilha gerada anteriormente</p></div>
+      <span class="toggle-icon" id="merge-icon">▼</span>
+    </div>
+    <div class="merge-body" id="merge-body">
+      <p class="merge-info">Carregue uma planilha gerada anteriormente para restaurar automaticamente as colunas <strong>ALOCAÇÃO</strong> e <strong>COMPROVANTE / RECIBO</strong> já preenchidas. O sistema identifica lançamentos por chave única (banco + data + valor + descrição) e copia os valores correspondentes.</p>
+      <div class="merge-slot">
+        <div class="upload-slot" id="slot-prev">
+          <div class="slot-hdr">
+            <div class="slot-num" style="background:#7C3AED">↩</div>
+            <span class="slot-label">Planilha Anterior</span>
+            <span class="slot-tag">.XLSX</span>
+          </div>
+          <div class="slot-body">
+            <div class="dz" id="dz-prev" ondragover="dzOver(event,'prev')" ondragleave="dzOut('prev')" ondrop="dzDrop(event,'prev')">
+              <input type="file" id="f-prev" accept=".xlsx" onchange="onFile('prev')">
+              <svg class="dz-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" fill="currentColor"/></svg>
+              <div class="dz-title">Clique ou arraste</div>
+              <div class="dz-sub">FINANCEIRO_*.xlsx</div>
+            </div>
+            <div class="chip" id="chip-prev">
+              <span class="chip-name" id="chip-prev-n"></span>
+              <button class="chip-rm" onclick="clearFile('prev')">×</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="merge-stats-panel"></div>
+    </div>
+  </div>
+
   <!-- PLANO DE CONTAS -->
   <div class="panel panel-cats">
     <div class="panel-hdr" onclick="toggleCats()">
@@ -395,6 +457,7 @@
   <!-- RESULTS -->
   <div class="results" id="results">
     <div id="erros-box"></div>
+    <div id="merge-stats-div" style="display:none"></div>
 
     <div class="sec-lbl">Extratos Bancários</div>
     <div class="kpi-row">
@@ -474,6 +537,26 @@
       <button class="btn-more" id="erp-more" onclick="verMaisErp()" style="display:none"></button>
     </div>
 
+    <div id="conf-sec" style="display:none">
+      <div class="sec-lbl" style="margin-top:28px">Conferência de Saldos</div>
+      <div id="conf-badge-div"></div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table class="conf-tbl">
+            <thead>
+              <tr>
+                <th style="text-align:left">BANCO</th>
+                <th>SALDO INICIAL</th><th>ENTRADAS</th><th>SAÍDAS</th>
+                <th>SALDO ESPERADO</th><th>SALDO FINAL</th>
+                <th>DIVERGÊNCIA</th><th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="conf-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <button class="btn-gerar" id="btn-gerar" onclick="gerarExcel()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg>
       Gerar Planilha Excel
@@ -530,7 +613,7 @@ function makeId(banco, data, valor, desc) {
 }
 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
-const S = { files: {}, lanc: [], erp: [], cats: [] };
+const S = { files: {}, lanc: [], erp: [], cats: [], prevAlocacoes: {}, mergeRestored: 0 };
 
 // ── PLANO DE CONTAS — PADRÃO ──────────────────────────────────────────────────
 const DEFAULT_CATS = [
@@ -775,13 +858,13 @@ function buildApuracao(wb) {
       r.condicao,                // C
       'N/A',                     // D
       r.descricao,               // E
-      null,                      // F  ALOCAÇÃO — usuário preenche
+      (S.prevAlocacoes[r.id] || {}).alocacao    || null, // F  ALOCAÇÃO
       {formula:`IFERROR(INDEX(LISTAS!$B:$B,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // G
       {formula:`IFERROR(INDEX(LISTAS!$C:$C,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // H
       {formula:`IFERROR(INDEX(LISTAS!$D:$D,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // I
       isE ? r.valor : null,      // J  ENTRADA
       isE ? null  : r.valor,     // K  SAÍDA
-      null,                      // L  COMPROVANTE — usuário preenche
+      (S.prevAlocacoes[r.id] || {}).comprovante || null, // L  COMPROVANTE
       r.mes,                     // M
       {formula:`IF(J${rn}>0,J${rn},K${rn})`}, // N
     ]);
@@ -859,6 +942,201 @@ function buildERP(wb) {
   ws.autoFilter = {from:'A1', to:'I1'};
 }
 
+// ── FASE 4 — RESUMO ──────────────────────────────────────────────────────────
+
+function buildResumo(wb) {
+  const ws = wb.addWorksheet('RESUMO');
+  ws.columns = [
+    {key:'a',width:30},{key:'b',width:18},{key:'c',width:18},{key:'d',width:18},{key:'e',width:14},
+  ];
+
+  const styleHdr = (row, argb) => {
+    row.eachCell(cell => {
+      cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
+      cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb}};
+      cell.alignment = {horizontal:'center', vertical:'middle'};
+    });
+    row.height = 22;
+  };
+
+  const t = ws.addRow(['RESUMO FINANCEIRO','','','','']);
+  t.getCell(1).font = {bold:true, size:14, color:{argb:'FFFFFFFF'}};
+  [1,2,3,4,5].forEach(i => { t.getCell(i).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FF0D3B2E'}}; });
+  t.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
+  ws.mergeCells('A1:E1');
+  t.height = 34;
+
+  ws.addRow([]);
+
+  const lanc = S.lanc;
+  const ent  = lanc.filter(r=>r.tipo==='Entrada');
+  const sai  = lanc.filter(r=>r.tipo==='Saída');
+  const sumE = ent.reduce((s,r)=>s+r.valor,0);
+  const sumS = sai.reduce((s,r)=>s+r.valor,0);
+  const saldo = sumE-sumS;
+  const datas = lanc.map(r=>r.data).filter(Boolean);
+  const dMin  = fmtDate(new Date(Math.min(...datas)));
+  const dMax  = fmtDate(new Date(Math.max(...datas)));
+
+  const h1 = ws.addRow(['TOTAIS GERAIS','','','','']);
+  styleHdr(h1, 'FF1B6B5A');
+  ws.mergeCells(`A${h1.number}:E${h1.number}`);
+
+  [
+    ['Período', `${dMin} a ${dMax}`],
+    ['Total de Lançamentos', lanc.length],
+    ['Total Entradas', sumE],
+    ['Total Saídas', sumS],
+    ['Saldo Líquido', saldo],
+  ].forEach((d,i) => {
+    const r = ws.addRow(d);
+    r.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FFF9FAFB'}};
+    r.getCell(1).font = {bold:true, color:{argb:'FF374151'}};
+    if (i>=2) {
+      r.getCell(2).numFmt = '#,##0.00';
+      const clr = i===2?'FF166534':i===3?'FF991B1B':(saldo>=0?'FF166534':'FF991B1B');
+      r.getCell(2).font = {bold:true, color:{argb:clr}};
+    }
+  });
+
+  ws.addRow([]);
+
+  const h2 = ws.addRow(['RESUMO POR BANCO','ENTRADAS','SAÍDAS','SALDO','LANÇAMENTOS']);
+  styleHdr(h2, 'FF0D3B2E');
+
+  [...new Set(lanc.map(r=>r.banco))].forEach(banco => {
+    const bR = lanc.filter(r=>r.banco===banco);
+    const bE = bR.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const bS = bR.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const bSaldo = bE-bS;
+    const r = ws.addRow([banco, bE, bS, bSaldo, bR.length]);
+    [2,3,4].forEach(c=>{r.getCell(c).numFmt='#,##0.00';});
+    r.getCell(2).font = {color:{argb:'FF166534'}};
+    r.getCell(3).font = {color:{argb:'FF991B1B'}};
+    r.getCell(4).font = {bold:true, color:{argb:bSaldo>=0?'FF166534':'FF991B1B'}};
+    r.getCell(5).alignment = {horizontal:'center'};
+  });
+
+  ws.addRow([]);
+
+  const h3 = ws.addRow(['RESUMO POR MÊS','ENTRADAS','SAÍDAS','SALDO','LANÇAMENTOS']);
+  styleHdr(h3, 'FF0D3B2E');
+
+  [...new Set(lanc.map(r=>r.mes))].sort().forEach(mes => {
+    const mR = lanc.filter(r=>r.mes===mes);
+    const mE = mR.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const mS = mR.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const mSaldo = mE-mS;
+    const r = ws.addRow([mes, mE, mS, mSaldo, mR.length]);
+    [2,3,4].forEach(c=>{r.getCell(c).numFmt='#,##0.00';});
+    r.getCell(2).font = {color:{argb:'FF166534'}};
+    r.getCell(3).font = {color:{argb:'FF991B1B'}};
+    r.getCell(4).font = {bold:true, color:{argb:mSaldo>=0?'FF166534':'FF991B1B'}};
+    r.getCell(5).alignment = {horizontal:'center'};
+  });
+}
+
+// ── FASE 5 — CONFERÊNCIA ──────────────────────────────────────────────────────
+
+function _calcConferencia() {
+  return [...new Set(S.lanc.map(r=>r.banco))].map(banco => {
+    const rows  = S.lanc.filter(r=>r.banco===banco);
+    const withS = rows.filter(r=>r.saldo!=null&&!isNaN(r.saldo)).sort((a,b)=>a.data-b.data);
+    if (!withS.length) return {banco, noSaldo:true};
+    const sorted = [...rows].sort((a,b)=>a.data-b.data);
+    const first  = withS[0];
+    const last   = withS[withS.length-1];
+    const saldoI = first.tipo==='Entrada' ? first.saldo-first.valor : first.saldo+first.valor;
+    const saldoF = last.saldo;
+    const totE   = sorted.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const totS   = sorted.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const saldoE = saldoI+totE-totS;
+    const div    = saldoF-saldoE;
+    const ok     = Math.abs(div)<0.05;
+    return {banco, saldoI, totE, totS, saldoE, saldoF, div, ok};
+  });
+}
+
+function buildConferencia(wb) {
+  const ws = wb.addWorksheet('CONFERÊNCIA');
+  ws.columns = [
+    {key:'a',width:22},{key:'b',width:16},{key:'c',width:16},{key:'d',width:16},
+    {key:'e',width:18},{key:'f',width:16},{key:'g',width:16},{key:'h',width:14},
+  ];
+
+  const t = ws.addRow(['CONFERÊNCIA DE SALDOS','','','','','','','']);
+  [1,2,3,4,5,6,7,8].forEach(i=>{t.getCell(i).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D3B2E'}};});
+  t.getCell(1).font = {bold:true, size:13, color:{argb:'FFFFFFFF'}};
+  t.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
+  ws.mergeCells('A1:H1');
+  t.height = 30;
+
+  ws.addRow([]);
+
+  const h = ws.addRow(['BANCO','SALDO INICIAL','ENTRADAS','SAÍDAS','SALDO ESPERADO','SALDO FINAL','DIVERGÊNCIA','STATUS']);
+  h.eachCell(cell => {
+    cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+  });
+  h.height = 24;
+
+  _calcConferencia().forEach(c => {
+    if (c.noSaldo) {
+      const r = ws.addRow([c.banco,'N/D','N/D','N/D','N/D','N/D','N/D','SEM SALDO']);
+      r.getCell(8).font = {color:{argb:'FF6B7280'}};
+      return;
+    }
+    const dr = ws.addRow([c.banco, c.saldoI, c.totE, c.totS, c.saldoE, c.saldoF, c.ok?0:c.div, c.ok?'OK ✓':'DIVERGÊNCIA ⚠']);
+    [2,3,4,5,6,7].forEach(ci=>{dr.getCell(ci).numFmt='#,##0.00';});
+    dr.getCell(3).font = {color:{argb:'FF166534'}};
+    dr.getCell(4).font = {color:{argb:'FF991B1B'}};
+    dr.getCell(7).font = {bold:true, color:{argb:c.ok?'FF166534':'FF991B1B'}};
+    dr.getCell(8).font = {bold:true, color:{argb:c.ok?'FF166534':'FF991B1B'}};
+    const bg = c.ok ? 'FFF0FDF4' : 'FFFFF5F5';
+    dr.getCell(8).fill = {type:'pattern', pattern:'solid', fgColor:{argb:bg}};
+    if (!c.ok) dr.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF5F5'}};});
+  });
+
+  ws.addRow([]);
+  const n = ws.addRow(['* Tolerância de R$ 0,05 para arredondamentos bancários.']);
+  n.getCell(1).font = {italic:true, color:{argb:'FF6B7280'}, size:10};
+  ws.mergeCells(`A${n.number}:H${n.number}`);
+  ws.views = [{state:'frozen', ySplit:3}];
+}
+
+function renderConferencia() {
+  const conf = _calcConferencia();
+  const tbody = document.getElementById('conf-tbody');
+  tbody.innerHTML = '';
+  let allOk = true;
+
+  conf.forEach(c => {
+    const tr = document.createElement('tr');
+    if (c.noSaldo) {
+      tr.innerHTML = `<td>${c.banco}</td><td colspan="6" style="text-align:center;color:var(--gray500);font-size:11px">saldo não disponível no extrato</td><td></td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+    if (!c.ok) { allOk = false; tr.className = 'c-err-row'; }
+    tr.innerHTML = `
+      <td>${c.banco}</td>
+      <td>${fmtBRL(c.saldoI)}</td>
+      <td class="val-e">${fmtBRL(c.totE)}</td>
+      <td class="val-s">${fmtBRL(c.totS)}</td>
+      <td>${fmtBRL(c.saldoE)}</td>
+      <td>${fmtBRL(c.saldoF)}</td>
+      <td class="${c.ok?'c-ok':'c-err'}">${c.ok?'R$ 0,00':fmtBRL(c.div)}</td>
+      <td class="${c.ok?'c-ok':'c-err'}" style="text-align:center">${c.ok?'OK ✓':'DIVERGÊNCIA ⚠'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('conf-badge-div').innerHTML = allOk
+    ? '<div class="conf-badge conf-ok">✓ Todos os saldos conferem</div>'
+    : '<div class="conf-badge conf-warn">⚠ Divergências encontradas — verifique os extratos</div>';
+  document.getElementById('conf-sec').style.display = '';
+}
+
 async function gerarExcel() {
   if (!S.lanc.length) { alert('Processe os arquivos primeiro.'); return; }
   if (typeof ExcelJS === 'undefined') {
@@ -879,6 +1157,8 @@ async function gerarExcel() {
     buildListas(wb);
     buildApuracao(wb);
     if (S.erp.length) buildERP(wb);
+    buildResumo(wb);
+    buildConferencia(wb);
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob   = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -899,6 +1179,39 @@ async function gerarExcel() {
 
   btn.disabled = false;
   btn.innerHTML = orig;
+}
+
+// ── MERGE INCREMENTAL ────────────────────────────────────────────────────────
+
+function toggleMerge() {
+  const body = document.getElementById('merge-body');
+  const icon = document.getElementById('merge-icon');
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+function processApuracaoSheet(wb) {
+  const sheetName = wb.SheetNames.find(n => n.toUpperCase().includes('APURA'));
+  if (!sheetName) throw new Error('Aba APURAÇÃO não encontrada no arquivo.');
+  const ws   = wb.Sheets[sheetName];
+  const rows = window.XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true, cellDates:true});
+  const map  = {};
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || (!row[0] && !row[1])) continue;
+    const alocacao    = row[5]  != null ? String(row[5]).trim()  : '';
+    const comprovante = row[11] != null ? String(row[11]).trim() : '';
+    if (!alocacao && !comprovante) continue;
+    const dt    = parseDate(row[0]);
+    const banco = String(row[1] || '').trim().toUpperCase();
+    const desc  = String(row[4] || '').trim();
+    const entV  = parseNum(row[9]);
+    const saiV  = parseNum(row[10]);
+    const valor = (!isNaN(entV) && entV > 0) ? entV : ((!isNaN(saiV) && saiV > 0) ? saiV : NaN);
+    if (!dt || !banco || isNaN(valor)) continue;
+    map[makeId(banco, dt, valor, desc)] = {alocacao, comprovante};
+  }
+  return {map, count: Object.keys(map).length};
 }
 
 // ── CONDIÇÃO ──────────────────────────────────────────────────────────────────
@@ -1136,6 +1449,25 @@ async function processar() {
     if (!todos.length) { btn.disabled=false; btn.innerHTML=orig; return; }
 
     S.lanc = pipeline(todos);
+
+    S.prevAlocacoes = {};
+    S.mergeRestored = 0;
+    if (S.files['prev']) {
+      try {
+        const pwb = await lerArquivo(S.files['prev']);
+        const res  = processApuracaoSheet(pwb);
+        S.prevAlocacoes = res.map;
+        S.mergeRestored = S.lanc.filter(r => {
+          const p = S.prevAlocacoes[r.id];
+          return p && p.alocacao;
+        }).length;
+        if (res.count > 0) {
+          document.getElementById('merge-stats-panel').innerHTML =
+            `<div class="merge-stats-inline">↩ ${res.count} alocações carregadas — ${S.mergeRestored} serão restauradas</div>`;
+        }
+      } catch(e) { erros.push(`Planilha Anterior: ${e.message}`); }
+    }
+
     mostrar();
     document.getElementById('results').classList.add('on');
     document.getElementById('results').scrollIntoView({behavior:'smooth'});
@@ -1209,6 +1541,16 @@ function mostrar() {
 
   if (S.erp.length) { document.getElementById('erp-sec').style.display=''; renderERP(); }
   else document.getElementById('erp-sec').style.display='none';
+
+  renderConferencia();
+
+  const mergeDiv = document.getElementById('merge-stats-div');
+  if (S.mergeRestored > 0) {
+    mergeDiv.style.display = '';
+    mergeDiv.innerHTML = `<div class="merge-restored-alert">↩ ${S.mergeRestored} alocação(ões) restauradas da planilha anterior e pré-preenchidas na nova planilha.</div>`;
+  } else {
+    mergeDiv.style.display = 'none';
+  }
 }
 
 function renderTabela() {

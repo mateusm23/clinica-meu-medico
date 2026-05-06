@@ -613,7 +613,7 @@ function makeId(banco, data, valor, desc) {
 }
 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
-const S = { files: {}, lanc: [], erp: [], cats: [], prevAlocacoes: {}, mergeRestored: 0 };
+const S = { files: {}, lanc: [], erp: [], cats: [], saldosBanco: {}, prevAlocacoes: {}, mergeRestored: 0 };
 
 // ── PLANO DE CONTAS — PADRÃO ──────────────────────────────────────────────────
 const DEFAULT_CATS = [
@@ -846,26 +846,42 @@ function buildApuracao(wb) {
   hRow.height = 30;
 
   const sorted  = [...S.lanc].sort((a,b) => a.data - b.data);
-  const dvLast  = S.cats.length + 1; // last row in LISTAS with data
+  const dvLast  = S.cats.length + 1;
 
-  sorted.forEach((r, i) => {
-    const rn  = i + 2;
-    const isE = r.tipo === 'Entrada';
+  // Chave da categoria SALDO ANTERIOR no plano de contas
+  const saldoCat    = S.cats.find(c => c.disc === 'SALDO ANTERIOR');
+  const saldoChave  = saldoCat ? makeChave(saldoCat.ref, saldoCat.custo, saldoCat.disc, saldoCat.cat) : null;
+
+  const bancos = [...new Set(S.lanc.map(r=>r.banco))].sort();
+  let currentRow = 2;
+
+  // ── Linhas de Saldo Anterior (uma por banco) ─────────────────────────────
+  for (const banco of bancos) {
+    const lancBanco = S.lanc.filter(r=>r.banco===banco);
+    const bE = lancBanco.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const bS = lancBanco.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const saldoBanco   = lancBanco[0]?.saldo;
+    const saldoAnterior = (!isNaN(saldoBanco) && saldoBanco != null) ? saldoBanco - (bE - bS) : null;
+    if (saldoAnterior === null || isNaN(saldoAnterior)) continue;
+
+    const oldest = [...lancBanco].sort((a,b)=>a.data-b.data)[0];
+    const rn = currentRow;
+    const isPos = saldoAnterior >= 0;
 
     const row = ws.addRow([
-      r.data,                    // A
-      r.banco,                   // B
-      r.condicao,                // C
-      'N/A',                     // D
-      r.descricao,               // E
-      (S.prevAlocacoes[r.id] || {}).alocacao    || null, // F  ALOCAÇÃO
+      oldest?.data,                     // A  DT PGTO (primeiro dia do extrato)
+      banco,                            // B  FORMA
+      'SALDO ANTERIOR',                 // C  CONDIÇÃO
+      'N/A',                            // D  PARCELA
+      'SALDO ANTERIOR',                 // E  PRESTADOR
+      saldoChave ?? null,               // F  ALOCAÇÃO (pré-preenchida se existir no plano)
       {formula:`IFERROR(INDEX(LISTAS!$B:$B,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // G
       {formula:`IFERROR(INDEX(LISTAS!$C:$C,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // H
       {formula:`IFERROR(INDEX(LISTAS!$D:$D,MATCH($F${rn},LISTAS!$E:$E,0)),"")`}, // I
-      isE ? r.valor : null,      // J  ENTRADA
-      isE ? null  : r.valor,     // K  SAÍDA
-      (S.prevAlocacoes[r.id] || {}).comprovante || null, // L  COMPROVANTE
-      r.mes,                     // M
+      isPos ? saldoAnterior : null,            // J  ENTRADA
+      isPos ? null : saldoAnterior,             // K  SAÍDA (negativo)
+      null,                             // L  COMPROVANTE
+      oldest ? fmtMes(new Date(oldest.data)) : null, // M  MÊS
       {formula:`IF(J${rn}>0,J${rn},K${rn})`}, // N
     ]);
 
@@ -875,19 +891,52 @@ function buildApuracao(wb) {
     row.getCell(11).numFmt   = '#,##0.00';
     row.getCell(13).alignment = {horizontal:'center'};
     row.getCell(14).numFmt   = '#,##0.00';
-
+    row.eachCell(cell => { cell.font = {bold:true}; });
     row.getCell(6).dataValidation = {
       type:'list', allowBlank:true,
       formulae:[`LISTAS!$E$2:$E$${dvLast}`],
       showErrorMessage:false,
     };
+    currentRow++;
+  }
+
+  // ── Linhas de transações ──────────────────────────────────────────────────
+  sorted.forEach(r => {
+    const rn  = currentRow;
+    const isE = r.tipo === 'Entrada';
+
+    const row = ws.addRow([
+      r.data,
+      r.banco,
+      r.condicao,
+      'N/A',
+      r.descricao,
+      (S.prevAlocacoes[r.id] || {}).alocacao    || null,
+      {formula:`IFERROR(INDEX(LISTAS!$B:$B,MATCH($F${rn},LISTAS!$E:$E,0)),"")`},
+      {formula:`IFERROR(INDEX(LISTAS!$C:$C,MATCH($F${rn},LISTAS!$E:$E,0)),"")`},
+      {formula:`IFERROR(INDEX(LISTAS!$D:$D,MATCH($F${rn},LISTAS!$E:$E,0)),"")`},
+      isE ? r.valor : null,
+      isE ? null  : -r.valor,
+      (S.prevAlocacoes[r.id] || {}).comprovante || null,
+      r.mes,
+      {formula:`IF(J${rn}>0,J${rn},K${rn})`},
+    ]);
+
+    row.getCell(1).numFmt    = 'DD/MM/YYYY';
+    row.getCell(1).alignment = {horizontal:'center'};
+    row.getCell(10).numFmt   = '#,##0.00';
+    row.getCell(11).numFmt   = '#,##0.00';
+    row.getCell(13).alignment = {horizontal:'center'};
+    row.getCell(14).numFmt   = '#,##0.00';
+    row.getCell(6).dataValidation = {
+      type:'list', allowBlank:true,
+      formulae:[`LISTAS!$E$2:$E$${dvLast}`],
+      showErrorMessage:false,
+    };
+    currentRow++;
   });
 
-  const lastRow = sorted.length + 1;
-  // Formatação condicional (prioridade 1 = mais alta):
-  // 1 → ALOCAÇÃO vazia = amarelo  (avisa para preencher)
-  // 2 → Entrada = verde
-  // 3 → Saída   = rosa/vermelho
+  const lastRow = currentRow - 1;
   ws.addConditionalFormatting({
     ref: `A2:N${lastRow}`,
     rules: [
@@ -895,7 +944,7 @@ function buildApuracao(wb) {
        style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFFF9C4'}}}},
       {type:'expression', formulae:[`$J2>0`],  priority:2,
        style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFE8F5E9'}}}},
-      {type:'expression', formulae:[`$K2>0`],  priority:3,
+      {type:'expression', formulae:[`$K2<0`],  priority:3,
        style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFCE4EC'}}}},
     ]
   });
@@ -1246,11 +1295,19 @@ function condSant(hist) {
 // Cols: Data Referência | Hora | Tipo | Descrição | Valor Transação | D/C | Saldo após | Saldo Final
 function parseValori(rows, banco) {
   const out = [];
+  const saldosDia = new Map(); // timestamp -> saldo de fechamento do dia
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     const tipo = String(row[2]||'').trim();
     const dc   = String(row[5]||'').trim().toUpperCase();
-    if (!tipo || tipo.toLowerCase().includes('saldo do dia') || !dc) continue;
+    if (!tipo) continue;
+    if (tipo.toLowerCase().includes('saldo do dia')) {
+      const data = parseDate(row[0]);
+      const s = parseNum(row[6]);
+      if (data && !isNaN(s)) saldosDia.set(data.getTime(), s);
+      continue;
+    }
+    if (!dc) continue;
     const data  = parseDate(row[0]);
     const valor = Math.abs(parseNum(row[4]));
     if (!data || isNaN(valor) || valor === 0) continue;
@@ -1266,6 +1323,10 @@ function parseValori(rows, banco) {
       mes: fmtMes(data),
       alocacao:'', comprovante:'', observacao:''
     });
+  }
+  if (saldosDia.size > 0) {
+    const maxTs = Math.max(...saldosDia.keys());
+    S.saldosBanco[banco] = saldosDia.get(maxTs);
   }
   return out;
 }
@@ -1422,6 +1483,7 @@ async function processar() {
   }
 
   try {
+    S.saldosBanco = {};
     const todos = [], erros = [];
     for (const k of bancoKeys) {
       if (!S.files[k]) continue;
@@ -1518,10 +1580,21 @@ function mostrar() {
   const grid = document.getElementById('banco-grid');
   grid.innerHTML = '';
   for (const banco of bancos) {
-    const rows = lanc.filter(r=>r.banco===banco);
+    const rows = lanc.filter(r=>r.banco===banco).sort((a,b)=>a.data-b.data);
     const bE = rows.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
     const bS = rows.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
     const bSaldo = bE-bS;
+
+    // S.lanc está em ordem decrescente (pipeline), então o primeiro elemento do banco
+    // é a transação mais recente = saldo real do banco no fechamento do extrato
+    const lancBanco = lanc.filter(r=>r.banco===banco);
+    const saldoBanco = lancBanco[0]?.saldo;
+
+    // Saldo Anterior: derivado matematicamente — sempre fecha com o Saldo no Banco
+    const saldoAnterior = (!isNaN(saldoBanco) && saldoBanco != null) ? saldoBanco - bSaldo : NaN;
+
+    const hasSaldos = !isNaN(saldoAnterior) && !isNaN(saldoBanco) && saldoBanco != null;
+
     const card = document.createElement('div');
     card.className = 'banco-card';
     card.innerHTML = `
@@ -1529,7 +1602,11 @@ function mostrar() {
       <div class="banco-row"><span>Lançamentos</span><span class="vn">${rows.length}</span></div>
       <div class="banco-row"><span>Entradas</span><span class="ve">${fmtBRL(bE)}</span></div>
       <div class="banco-row"><span>Saídas</span><span class="vs">${fmtBRL(bS)}</span></div>
-      <div class="banco-row"><span>Saldo</span><span class="${bSaldo>=0?'ve':'vs'}">${fmtBRL(bSaldo)}</span></div>`;
+      <div class="banco-row"><span>Saldo</span><span class="${bSaldo>=0?'ve':'vs'}">${fmtBRL(bSaldo)}</span></div>
+      ${hasSaldos ? `
+      <hr style="border:none;border-top:1px solid var(--gray300);margin:8px 0">
+      <div class="banco-row"><span style="color:var(--gray500)">Saldo Anterior</span><span class="vn">${fmtBRL(saldoAnterior)}</span></div>
+      <div class="banco-row"><span style="color:var(--gray500)">Saldo no Banco</span><span class="vn">${fmtBRL(saldoBanco)}</span></div>` : ''}`;
     grid.appendChild(card);
   }
 

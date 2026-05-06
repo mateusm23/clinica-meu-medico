@@ -1109,48 +1109,109 @@ function _calcConferencia() {
 function buildConferencia(wb) {
   const ws = wb.addWorksheet('CONFERÊNCIA');
   ws.columns = [
-    {key:'a',width:22},{key:'b',width:16},{key:'c',width:16},{key:'d',width:16},
-    {key:'e',width:18},{key:'f',width:16},{key:'g',width:16},{key:'h',width:14},
+    {key:'a', width:22}, // A  BANCO
+    {key:'b', width:18}, // B  SALDO ANTERIOR (Sistema)
+    {key:'c', width:16}, // C  ENTRADAS
+    {key:'d', width:16}, // D  SAÍDAS
+    {key:'e', width:18}, // E  SALDO FINAL (Sistema)
+    {key:'f', width:18}, // F  SALDO ANTERIOR (Banco) — usuário preenche
+    {key:'g', width:18}, // G  SALDO FINAL (Banco) — usuário preenche
+    {key:'h', width:20}, // H  DIF — SALDO ANTERIOR
+    {key:'i', width:20}, // I  DIF — SALDO FINAL
   ];
 
-  const t = ws.addRow(['CONFERÊNCIA DE SALDOS','','','','','','','']);
-  [1,2,3,4,5,6,7,8].forEach(i=>{t.getCell(i).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0D3B2E'}};});
-  t.getCell(1).font = {bold:true, size:13, color:{argb:'FFFFFFFF'}};
+  // Linha 1: Título
+  const t = ws.addRow(['CONFERÊNCIA DE SALDOS','','','','','','','','']);
+  for (let i = 1; i <= 9; i++) t.getCell(i).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FF0D3B2E'}};
+  t.getCell(1).font      = {bold:true, size:13, color:{argb:'FFFFFFFF'}};
   t.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
-  ws.mergeCells('A1:H1');
+  ws.mergeCells('A1:I1');
   t.height = 30;
 
-  ws.addRow([]);
+  // Linha 2: Instrução
+  const inst = ws.addRow(['Preencha as colunas em amarelo com os saldos reais do extrato bancário. As colunas DIF devem ser zero.']);
+  for (let i = 1; i <= 9; i++) inst.getCell(i).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF9C3'}};
+  inst.getCell(1).font      = {italic:true, size:10, color:{argb:'FF374151'}};
+  inst.getCell(1).alignment = {horizontal:'left', vertical:'middle'};
+  ws.mergeCells('A2:I2');
+  inst.height = 18;
 
-  const h = ws.addRow(['BANCO','SALDO INICIAL','ENTRADAS','SAÍDAS','SALDO ESPERADO','SALDO FINAL','DIVERGÊNCIA','STATUS']);
+  // Linha 3: Cabeçalho
+  const h = ws.addRow([
+    'BANCO',
+    'SALDO ANTERIOR\n(Sistema)',
+    'ENTRADAS',
+    'SAÍDAS',
+    'SALDO FINAL\n(Sistema)',
+    'SALDO ANTERIOR\n(Banco)',
+    'SALDO FINAL\n(Banco)',
+    'DIF — SALDO\nANTERIOR',
+    'DIF — SALDO\nFINAL',
+  ]);
   h.eachCell(cell => {
-    cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
-    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
+    cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
   });
-  h.height = 24;
+  h.height = 36;
 
-  _calcConferencia().forEach(c => {
-    if (c.noSaldo) {
-      const r = ws.addRow([c.banco,'N/D','N/D','N/D','N/D','N/D','N/D','SEM SALDO']);
-      r.getCell(8).font = {color:{argb:'FF6B7280'}};
-      return;
-    }
-    const dr = ws.addRow([c.banco, c.saldoI, c.totE, c.totS, c.saldoE, c.saldoF, c.ok?0:c.div, c.ok?'OK ✓':'DIVERGÊNCIA ⚠']);
-    [2,3,4,5,6,7].forEach(ci=>{dr.getCell(ci).numFmt='#,##0.00';});
+  const bancos = [...new Set(S.lanc.map(r=>r.banco))].sort();
+  let currentRow = 4;
+
+  bancos.forEach(banco => {
+    const lancBanco    = S.lanc.filter(r=>r.banco===banco);
+    const bE           = lancBanco.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
+    const bS           = lancBanco.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const saldoFinal   = lancBanco[0]?.saldo;
+    const saldoAnterior = (!isNaN(saldoFinal) && saldoFinal != null) ? saldoFinal - (bE - bS) : null;
+    const rn = currentRow;
+
+    const dr = ws.addRow([
+      banco,         // A
+      saldoAnterior, // B
+      bE,            // C
+      bS,            // D
+      saldoFinal,    // E
+      null,          // F — usuário preenche
+      null,          // G — usuário preenche
+      {formula:`IF(F${rn}="","",B${rn}-F${rn})`}, // H
+      {formula:`IF(G${rn}="","",E${rn}-G${rn})`}, // I
+    ]);
+
+    dr.getCell(1).font = {bold:true};
+    [2,3,4,5,6,7,8,9].forEach(c => {
+      dr.getCell(c).numFmt   = '#,##0.00';
+      dr.getCell(c).alignment = {horizontal:'right'};
+    });
     dr.getCell(3).font = {color:{argb:'FF166534'}};
     dr.getCell(4).font = {color:{argb:'FF991B1B'}};
-    dr.getCell(7).font = {bold:true, color:{argb:c.ok?'FF166534':'FF991B1B'}};
-    dr.getCell(8).font = {bold:true, color:{argb:c.ok?'FF166534':'FF991B1B'}};
-    const bg = c.ok ? 'FFF0FDF4' : 'FFFFF5F5';
-    dr.getCell(8).fill = {type:'pattern', pattern:'solid', fgColor:{argb:bg}};
-    if (!c.ok) dr.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF5F5'}};});
+
+    // Amarelo nas células que o usuário preenche
+    [6, 7].forEach(c => {
+      dr.getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFF9C4'}};
+    });
+
+    dr.height = 22;
+    currentRow++;
   });
 
-  ws.addRow([]);
-  const n = ws.addRow(['* Tolerância de R$ 0,05 para arredondamentos bancários.']);
-  n.getCell(1).font = {italic:true, color:{argb:'FF6B7280'}, size:10};
-  ws.mergeCells(`A${n.number}:H${n.number}`);
+  const lastDataRow = currentRow - 1;
+
+  // Formatação condicional nas colunas DIF: verde = 0, vermelho ≠ 0
+  ['H', 'I'].forEach(col => {
+    ws.addConditionalFormatting({
+      ref: `${col}4:${col}${lastDataRow}`,
+      rules: [
+        {type:'expression', formulae:[`AND(ISNUMBER(${col}4),${col}4=0)`], priority:1,
+         style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFD1FAE5'}},
+                font:{bold:true, color:{argb:'FF065F46'}}}},
+        {type:'expression', formulae:[`AND(ISNUMBER(${col}4),${col}4<>0)`], priority:2,
+         style:{fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFEE2E2'}},
+                font:{bold:true, color:{argb:'FF991B1B'}}}},
+      ]
+    });
+  });
+
   ws.views = [{state:'frozen', ySplit:3}];
 }
 

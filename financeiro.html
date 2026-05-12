@@ -74,7 +74,7 @@
     .kpi.k-e{border-top-color:#22A06B}
     .kpi.k-s{border-top-color:#E04040}
     .kpi.k-t{border-top-color:var(--g400)}
-    .kpi.k-erp{border-top-color:#7C3AED}
+    .kpi.k-erp{border-top-color:var(--g700)}
     .kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray500);margin-bottom:6px}
     .k-sl .kpi-lbl{color:rgba(255,255,255,.55)}
     .kpi-val{font-size:20px;font-weight:700;color:var(--gray900)}
@@ -121,8 +121,8 @@
     .btn-more{display:block;width:100%;padding:11px;background:var(--gray100);border:none;border-radius:var(--rmd);font-size:13px;font-weight:600;color:var(--gray700);cursor:pointer;margin-top:8px;transition:background .15s}
     .btn-more:hover{background:var(--gray300)}
     .erp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px}
-    .erp-card{background:#fff;border-radius:var(--rmd);padding:16px 18px;box-shadow:var(--shsm);border-left:4px solid #7C3AED}
-    .erp-name{font-size:12px;font-weight:700;color:#5B21B6;margin-bottom:8px}
+    .erp-card{background:#fff;border-radius:var(--rmd);padding:16px 18px;box-shadow:var(--shsm);border-left:4px solid var(--g400)}
+    .erp-name{font-size:12px;font-weight:700;color:var(--g700);margin-bottom:8px}
     .erp-row{display:flex;justify-content:space-between;font-size:12px;color:var(--gray500);margin-bottom:3px}
     .alert{padding:12px 16px;border-radius:var(--rsm);font-size:13px;font-weight:500;margin-bottom:12px}
     .alert-err{background:var(--red100);color:var(--red600)}
@@ -136,11 +136,6 @@
     .cats-body{padding:20px 24px 24px;display:none}
     .cats-body.open{display:block}
     .cats-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-    .btn-sm{height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;font-family:'Inter',sans-serif}
-    .btn-add{background:var(--g700);border-color:var(--g700);color:#fff}
-    .btn-add:hover{background:var(--g600)}
-    .btn-reset{background:#fff;border-color:var(--gray300);color:var(--gray700)}
-    .btn-reset:hover{border-color:var(--gray500)}
     .cats-search{height:32px;padding:0 10px;border:1px solid var(--gray300);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;flex:1;min-width:160px}
     .cats-search:focus{border-color:var(--g400)}
     .cats-count{font-size:12px;color:var(--gray500);margin-left:auto;white-space:nowrap}
@@ -155,34 +150,10 @@
     .custo-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
     .custo-f{background:#DBEAFE;color:#1E40AF}
     .custo-v{background:#FEF3C7;color:#92400E}
-    .btn-icon{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:6px;font-size:13px;transition:background .15s;line-height:1}
-    .btn-icon:hover{background:var(--gray100)}
-    .btn-del:hover{background:var(--red100);color:var(--red600)}
     .chave-preview{font-size:11px;color:var(--gray500);font-family:monospace;background:var(--gray100);padding:2px 6px;border-radius:4px;max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
     .toggle-icon{margin-left:auto;font-size:14px;transition:transform .2s;color:var(--gray500)}
     .toggle-icon.open{transform:rotate(180deg)}
 
-    /* ── MODAL ── */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
-    .modal-overlay.on{display:flex}
-    .modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
-    .modal h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--gray900)}
-    .form-row{margin-bottom:16px}
-    .form-label{display:block;font-size:12px;font-weight:600;color:var(--gray700);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
-    .form-input,.form-select{width:100%;height:38px;padding:0 12px;border:1px solid var(--gray300);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:var(--gray900);outline:none;transition:border-color .15s}
-    .form-input:focus,.form-select:focus{border-color:var(--g400)}
-    .radio-group{display:flex;gap:10px}
-    .radio-opt{display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;border:1px solid var(--gray300);border-radius:8px;font-size:13px;font-weight:500;transition:all .15s;flex:1;justify-content:center}
-    .radio-opt input{display:none}
-    .radio-opt.sel-f{background:#DBEAFE;border-color:#3B82F6;color:#1E40AF}
-    .radio-opt.sel-v{background:#FEF3C7;border-color:#D97706;color:#92400E}
-    .chave-box{margin-top:12px;background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:10px 14px}
-    .chave-box-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray500);margin-bottom:3px}
-    .chave-box-val{font-size:12px;font-family:monospace;color:var(--g700);word-break:break-all}
-    .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:24px}
-    .btn-cancel{height:36px;padding:0 16px;border-radius:8px;border:1px solid var(--gray300);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--gray700);font-family:'Inter',sans-serif}
-    .btn-save{height:36px;padding:0 20px;border-radius:8px;border:none;background:var(--g700);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
-    .btn-save:hover{background:var(--g600)}
 
     /* ── GERAR EXCEL ── */
     .btn-gerar{width:100%;padding:15px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--g900);color:#fff;border:none;border-radius:var(--rmd);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:20px}
@@ -196,8 +167,8 @@
     .merge-body.open{display:block}
     .merge-info{font-size:13px;color:var(--gray500);margin-bottom:16px;line-height:1.6}
     .merge-slot{max-width:320px}
-    .merge-stats-inline{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 16px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:var(--rsm);font-size:13px;font-weight:600;color:#5B21B6}
-    .merge-restored-alert{padding:10px 16px;border-radius:var(--rsm);background:#F5F3FF;border-left:3px solid #7C3AED;font-size:13px;font-weight:500;color:#5B21B6;margin-bottom:12px}
+    .merge-stats-inline{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 16px;background:var(--g100);border:1px solid var(--g400);border-radius:var(--rsm);font-size:13px;font-weight:600;color:var(--g700)}
+    .merge-restored-alert{padding:10px 16px;border-radius:var(--rsm);background:var(--g100);border-left:3px solid var(--g700);font-size:13px;font-weight:500;color:var(--g700);margin-bottom:12px}
   </style>
 </head>
 <body>
@@ -222,7 +193,7 @@
 <div class="page">
   <div class="page-title">
     <h1>Processamento Financeiro Integrado</h1>
-    <p>Faça upload dos extratos bancários e do relatório ERP para gerar a base unificada.</p>
+    <p>Faça upload dos extratos bancários e do relatório CMM para gerar a base unificada.</p>
   </div>
 
   <div class="panel">
@@ -232,7 +203,7 @@
           <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" fill="#1B6B5A"/>
         </svg>
       </div>
-      <div><h2>Arquivos de Entrada</h2><p>Extratos bancários (.xls/.xlsx) e relatório ERP</p></div>
+      <div><h2>Arquivos de Entrada</h2><p>Extratos bancários (.xls/.xlsx) e relatório CMM</p></div>
     </div>
     <div class="panel-body">
       <div class="upload-grid">
@@ -297,11 +268,11 @@
           </div>
         </div>
 
-        <!-- ERP -->
+        <!-- CMM -->
         <div class="upload-slot" id="slot-erp">
           <div class="slot-hdr">
             <div class="slot-num">4</div>
-            <span class="slot-label">ERP</span>
+            <span class="slot-label">CMM</span>
             <span class="slot-tag">Opcional</span>
           </div>
           <div class="slot-body">
@@ -379,8 +350,6 @@
     </div>
     <div class="cats-body" id="cats-body">
       <div class="cats-toolbar">
-        <button class="btn-sm btn-add" onclick="openModal()">+ Adicionar</button>
-        <button class="btn-sm btn-reset" onclick="restoreDefault()">↺ Restaurar Padrão</button>
         <input type="text" class="cats-search" id="cats-search" placeholder="Filtrar categorias…" oninput="renderCats()">
         <span class="cats-count" id="cats-count"></span>
       </div>
@@ -388,54 +357,11 @@
         <div class="cats-tbl-scroll">
           <table class="cats-tbl">
             <thead>
-              <tr><th>REF</th><th>CUSTO</th><th>DISCRIMINAÇÃO</th><th>CATEGORIA</th><th>CHAVE</th><th></th></tr>
+              <tr><th>REF</th><th>CUSTO</th><th>DISCRIMINAÇÃO</th><th>CATEGORIA</th><th>CHAVE</th></tr>
             </thead>
             <tbody id="cats-tbody"></tbody>
           </table>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL ADD/EDIT -->
-  <div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
-    <div class="modal">
-      <h3 id="modal-title">Adicionar Categoria</h3>
-      <input type="hidden" id="modal-idx" value="-1">
-
-      <div class="form-row">
-        <label class="form-label">REF</label>
-        <input type="text" class="form-input" id="m-ref" placeholder="ex: 1.1" oninput="updateChavePreview()">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Tipo de Custo</label>
-        <div class="radio-group">
-          <label class="radio-opt" id="opt-f" onclick="setCusto('FIXO')">
-            <input type="radio" name="custo" value="FIXO"> FIXO
-          </label>
-          <label class="radio-opt" id="opt-v" onclick="setCusto('VARIAVEL')">
-            <input type="radio" name="custo" value="VARIAVEL"> VARIÁVEL
-          </label>
-        </div>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Discriminação</label>
-        <input type="text" class="form-input" id="m-disc" placeholder="ex: AGUA E ESGOTO" oninput="updateChavePreview()" style="text-transform:uppercase">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Categoria</label>
-        <input type="text" class="form-input" id="m-cat" placeholder="ex: DESPESAS ADMINISTRATIVAS" list="cats-datalist" oninput="updateChavePreview()" style="text-transform:uppercase">
-        <datalist id="cats-datalist"></datalist>
-      </div>
-
-      <div class="chave-box">
-        <div class="chave-box-lbl">CHAVE gerada</div>
-        <div class="chave-box-val" id="chave-preview">—</div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-        <button class="btn-save" onclick="saveModal()">Salvar</button>
       </div>
     </div>
   </div>
@@ -468,7 +394,7 @@
         <div class="kpi-sub" id="k-bancos">—</div>
       </div>
       <div class="kpi k-erp">
-        <div class="kpi-lbl">ERP — Registros</div>
+        <div class="kpi-lbl">CMM — Registros</div>
         <div class="kpi-val" id="k-erp">—</div>
         <div class="kpi-sub" id="k-erp-tot">—</div>
       </div>
@@ -503,7 +429,7 @@
     <button class="btn-more" id="btn-more" onclick="verMais()" style="display:none"></button>
 
     <div id="erp-sec" style="display:none">
-      <div class="sec-lbl" style="margin-top:28px">ERP — Resumo por Conta Bancária</div>
+      <div class="sec-lbl" style="margin-top:28px">CMM — Resumo por Conta Bancária</div>
       <div class="erp-grid" id="erp-grid"></div>
       <div class="count" id="erp-count"></div>
       <div class="tbl-wrap">
@@ -624,30 +550,12 @@ const DEFAULT_CATS = [
   {ref:'10.1', custo:'VARIAVEL',disc:'SALDO ANTERIOR',                     cat:'SALDO ANTERIOR'},
 ];
 
-const LS_KEY = 'clinica_plano_contas';
+S.cats = JSON.parse(JSON.stringify(DEFAULT_CATS));
 
 function makeChave(ref, custo, disc, cat) {
   return `${ref} - ${custo} - ${disc} - ${cat}`;
 }
 
-function saveCats() {
-  localStorage.setItem(LS_KEY, JSON.stringify(S.cats));
-}
-
-function loadCats() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    S.cats = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_CATS));
-  } catch { S.cats = JSON.parse(JSON.stringify(DEFAULT_CATS)); }
-  renderCats();
-}
-
-function restoreDefault() {
-  if (!confirm('Restaurar categorias padrão? As alterações serão perdidas.')) return;
-  S.cats = JSON.parse(JSON.stringify(DEFAULT_CATS));
-  saveCats();
-  renderCats();
-}
 
 // ── RENDER CATEGORIAS ─────────────────────────────────────────────────────────
 function renderCats() {
@@ -665,8 +573,7 @@ function renderCats() {
 
   const tbody = document.getElementById('cats-tbody');
   tbody.innerHTML = '';
-  lista.forEach((c, viIdx) => {
-    const realIdx = S.cats.indexOf(c);
+  lista.forEach(c => {
     const chave = makeChave(c.ref, c.custo, c.disc, c.cat);
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -674,29 +581,10 @@ function renderCats() {
       <td><span class="custo-badge ${c.custo==='FIXO'?'custo-f':'custo-v'}">${c.custo}</span></td>
       <td style="font-weight:500">${c.disc}</td>
       <td style="color:var(--gray500);font-size:12px">${c.cat}</td>
-      <td><span class="chave-preview" title="${chave}">${chave}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn-icon" onclick="openModal(${realIdx})" title="Editar">✏️</button>
-        <button class="btn-icon btn-del" onclick="deleteCat(${realIdx})" title="Excluir">🗑️</button>
-      </td>`;
+      <td><span class="chave-preview" title="${chave}">${chave}</span></td>`;
     tbody.appendChild(tr);
   });
-
-  // Atualiza datalist de categorias no modal
-  const cats = [...new Set(S.cats.map(c=>c.cat))];
-  document.getElementById('cats-datalist').innerHTML =
-    cats.map(c=>`<option value="${c}">`).join('');
 }
-
-function deleteCat(idx) {
-  if (!confirm(`Excluir "${S.cats[idx].disc}"?`)) return;
-  S.cats.splice(idx, 1);
-  saveCats();
-  renderCats();
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────────────────
-let _custo = 'FIXO';
 
 function toggleCats() {
   const body = document.getElementById('cats-body');
@@ -705,62 +593,18 @@ function toggleCats() {
   icon.classList.toggle('open');
 }
 
-function openModal(idx = -1) {
-  document.getElementById('modal-idx').value = idx;
-  if (idx >= 0) {
-    const c = S.cats[idx];
-    document.getElementById('modal-title').textContent = 'Editar Categoria';
-    document.getElementById('m-ref').value  = c.ref;
-    document.getElementById('m-disc').value = c.disc;
-    document.getElementById('m-cat').value  = c.cat;
-    setCusto(c.custo);
-  } else {
-    document.getElementById('modal-title').textContent = 'Adicionar Categoria';
-    document.getElementById('m-ref').value  = '';
-    document.getElementById('m-disc').value = '';
-    document.getElementById('m-cat').value  = '';
-    setCusto('FIXO');
-  }
-  updateChavePreview();
-  document.getElementById('modal-overlay').classList.add('on');
-  document.getElementById('m-ref').focus();
-}
+// ── CONSTANTES EXCEL ──────────────────────────────────────────────────────────
+const CELL_BORDER = {
+  top:   {style:'thin', color:{argb:'FFD1D5DB'}},
+  left:  {style:'thin', color:{argb:'FFD1D5DB'}},
+  bottom:{style:'thin', color:{argb:'FFD1D5DB'}},
+  right: {style:'thin', color:{argb:'FFD1D5DB'}},
+};
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('on');
-}
-
-function overlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
-
-function setCusto(v) {
-  _custo = v;
-  document.getElementById('opt-f').className = 'radio-opt' + (v==='FIXO'?' sel-f':'');
-  document.getElementById('opt-v').className = 'radio-opt' + (v==='VARIAVEL'?' sel-v':'');
-  updateChavePreview();
-}
-
-function updateChavePreview() {
-  const ref  = (document.getElementById('m-ref').value||'').trim();
-  const disc = (document.getElementById('m-disc').value||'').trim().toUpperCase();
-  const cat  = (document.getElementById('m-cat').value||'').trim().toUpperCase();
-  document.getElementById('chave-preview').textContent =
-    ref && disc && cat ? makeChave(ref, _custo, disc, cat) : '—';
-}
-
-function saveModal() {
-  const ref  = (document.getElementById('m-ref').value||'').trim();
-  const disc = (document.getElementById('m-disc').value||'').trim().toUpperCase();
-  const cat  = (document.getElementById('m-cat').value||'').trim().toUpperCase();
-  if (!ref || !disc || !cat) { alert('Preencha todos os campos.'); return; }
-  const idx = parseInt(document.getElementById('modal-idx').value);
-  const entry = { ref, custo: _custo, disc, cat };
-  if (idx >= 0) S.cats[idx] = entry;
-  else S.cats.push(entry);
-  saveCats();
-  renderCats();
-  closeModal();
+function colName(n) {
+  let s = '';
+  while (n > 0) { n--; s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26); }
+  return s;
 }
 
 // ── GERAR EXCEL — Fase 3 ─────────────────────────────────────────────────────
@@ -776,12 +620,14 @@ function buildListas(wb) {
     cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
     cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF0D3B2E'}};
     cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border    = CELL_BORDER;
   });
   hRow.height = 24;
   S.cats.forEach(c => {
-    ws.addRow([c.ref, c.custo, c.disc, c.cat, makeChave(c.ref,c.custo,c.disc,c.cat)]);
+    const row = ws.addRow([c.ref, c.custo, c.disc, c.cat, makeChave(c.ref,c.custo,c.disc,c.cat)]);
+    row.eachCell({includeEmpty:false}, cell => { cell.border = CELL_BORDER; });
   });
-  ws.views = [{state:'frozen', ySplit:1}];
+  ws.views = [{state:'frozen', ySplit:1, showGridLines:false}];
 }
 
 function buildApuracao(wb) {
@@ -920,12 +766,13 @@ function buildApuracao(wb) {
     ]
   });
 
-  ws.views      = [{state:'frozen', ySplit:1}];
+  ws.eachRow(row => { row.eachCell({includeEmpty:false}, c => { c.border = CELL_BORDER; }); });
+  ws.views      = [{state:'frozen', ySplit:1, showGridLines:false}];
   ws.autoFilter = {from:'A1', to:'N1'};
 }
 
-function buildERP(wb) {
-  const ws = wb.addWorksheet('ERP');
+function buildCMM(wb) {
+  const ws = wb.addWorksheet('CMM');
   ws.columns = [
     {key:'a',width:22},{key:'b',width:22},{key:'c',width:35},
     {key:'d',width:14},{key:'e',width:15},{key:'f',width:30},
@@ -937,8 +784,9 @@ function buildERP(wb) {
   ]);
   hRow.eachCell(cell => {
     cell.font      = {bold:true, color:{argb:'FFFFFFFF'}};
-    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF4C1D95'}};
+    cell.fill      = {type:'pattern', pattern:'solid', fgColor:{argb:'FF1B6B5A'}};
     cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border    = CELL_BORDER;
   });
   hRow.height = 26;
 
@@ -956,9 +804,10 @@ function buildERP(wb) {
     ]);
     row.getCell(4).numFmt = 'DD/MM/YYYY';
     [7, 8, 9].forEach(c => { row.getCell(c).numFmt = '#,##0.00'; });
+    row.eachCell({includeEmpty:false}, c => { c.border = CELL_BORDER; });
   });
 
-  ws.views      = [{state:'frozen', ySplit:1}];
+  ws.views      = [{state:'frozen', ySplit:1, showGridLines:false}];
   ws.autoFilter = {from:'A1', to:'I1'};
 }
 
@@ -1054,6 +903,9 @@ function buildResumo(wb) {
     r.getCell(4).font = {bold:true, color:{argb:mSaldo>=0?'FF166534':'FF991B1B'}};
     r.getCell(5).alignment = {horizontal:'center'};
   });
+
+  ws.eachRow(row => { row.eachCell({includeEmpty:false}, c => { c.border = CELL_BORDER; }); });
+  ws.views = [{showGridLines:false}];
 }
 
 
@@ -1163,7 +1015,145 @@ function buildConferencia(wb) {
     });
   });
 
-  ws.views = [{state:'frozen', ySplit:3}];
+  ws.eachRow(row => { row.eachCell({includeEmpty:false}, c => { c.border = CELL_BORDER; }); });
+  ws.views = [{state:'frozen', ySplit:3, showGridLines:false}];
+}
+
+// ── FASE 6 — CMM RESUMO ───────────────────────────────────────────────────────
+
+function buildCMMResumo(wb) {
+  if (!S.erp.length) return;
+
+  const ws  = wb.addWorksheet('CMM RESUMO');
+  const esc = s => String(s||'').replace(/"/g,'""');
+
+  // Coleta datas únicas da aba CMM (mesmos objetos Date para serial idêntico)
+  const dateMap = new Map();
+  S.erp.forEach(x => { if (x.pagamento) { const t = x.pagamento.getTime(); if (!dateMap.has(t)) dateMap.set(t, x.pagamento); } });
+  const dates = [...dateMap.values()].sort((a,b) => a-b);
+
+  ws.columns = [{width:42}, ...dates.map(()=>({width:14})), {width:16}];
+
+  const DKGRN = 'FF0D3B2E';
+  const GRN   = 'FF1B6B5A';
+  const LTGRN = 'FFE6F4F1';
+  const WHITE = 'FFFFFFFF';
+  const BGROW = 'FFF9FAFB';
+  const NUMS  = '#,##0.00';
+
+  const hdrStyle = row => {
+    row.eachCell(c => {
+      c.font = {bold:true, color:{argb:WHITE}};
+      c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:DKGRN}};
+      c.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+      c.border = CELL_BORDER;
+    });
+    row.height = 22;
+  };
+
+  const l1Style = row => {
+    row.eachCell(c => {
+      c.font = {bold:true, color:{argb:WHITE}};
+      c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:GRN}};
+      c.border = CELL_BORDER;
+    });
+    for (let i = 2; i <= row.cellCount; i++) { try { row.getCell(i).numFmt = NUMS; } catch(e){} }
+  };
+
+  const l2Style = row => {
+    row.eachCell(c => {
+      c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:BGROW}};
+      c.border = CELL_BORDER;
+    });
+    row.getCell(1).alignment = {indent:2, vertical:'middle'};
+    for (let i = 2; i <= row.cellCount; i++) { try { row.getCell(i).numFmt = NUMS; } catch(e){} }
+  };
+
+  const dataStyle = row => {
+    row.eachCell(c => {
+      c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:BGROW}};
+      c.border = CELL_BORDER;
+    });
+    for (let i = 2; i <= row.cellCount; i++) { try { row.getCell(i).numFmt = NUMS; } catch(e){} }
+  };
+
+  let r = 1;
+
+  // ── Título ────────────────────────────────────────────────────────────────
+  const title = ws.addRow(['RESUMO CMM — CLÍNICA NAS NUVENS']); r++;
+  title.getCell(1).font = {bold:true, size:13, color:{argb:DKGRN}};
+  ws.addRow([]); r++;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TABELA 1 — POR DOC CORRIGIDO × CONTA BANCÁRIA
+  // ══════════════════════════════════════════════════════════════════════════
+  hdrStyle(ws.addRow(['POR FORMA DE PAGAMENTO', 'TOTAL'])); r++;
+
+  const docs = [...new Set(S.erp.map(x=>x.doc_corrigido).filter(Boolean))].sort();
+  for (const doc of docs) {
+    l1Style(ws.addRow([doc, {formula:`SUMIF(CMM!$E:$E,"${esc(doc)}",CMM!$I:$I)`}])); r++;
+    const contas = [...new Set(S.erp.filter(x=>x.doc_corrigido===doc).map(x=>x.conta_bancaria).filter(Boolean))].sort();
+    for (const conta of contas) {
+      l2Style(ws.addRow([conta, {formula:`SUMIFS(CMM!$I:$I,CMM!$E:$E,"${esc(doc)}",CMM!$A:$A,"${esc(conta)}")`}])); r++;
+    }
+  }
+  l1Style(ws.addRow(['TOTAL GERAL', {formula:`SUM(CMM!$I:$I)`}])); r++;
+
+  ws.addRow([]); r++;
+  ws.addRow([]); r++;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TABELA 2 — CAT. FATURAMENTO × DATA
+  // ══════════════════════════════════════════════════════════════════════════
+  const cats = [...new Set(S.erp.map(x=>x.cat_faturamento).filter(Boolean))].sort();
+  const t2HdrRow = r;
+  const t2Hdr = ws.addRow(['CAT. FATURAMENTO', ...dates, 'TOTAL']); hdrStyle(t2Hdr);
+  for (let i = 2; i <= dates.length+1; i++) t2Hdr.getCell(i).numFmt = 'DD/MM/YYYY';
+  r++;
+
+  for (const cat of cats) {
+    const rowVals = [cat];
+    for (let di = 0; di < dates.length; di++) {
+      rowVals.push({formula:`SUMIFS(CMM!$I:$I,CMM!$B:$B,$A${r},CMM!$D:$D,${colName(di+2)}${t2HdrRow})`});
+    }
+    rowVals.push({formula:`SUM(${colName(2)}${r}:${colName(dates.length+1)}${r})`});
+    dataStyle(ws.addRow(rowVals)); r++;
+  }
+  const t2TotVals = ['TOTAL'];
+  for (let di = 0; di < dates.length; di++) {
+    const col = colName(di+2);
+    t2TotVals.push({formula:`SUM(${col}${t2HdrRow+1}:${col}${r-1})`});
+  }
+  t2TotVals.push({formula:`SUM(${colName(dates.length+2)}${t2HdrRow+1}:${colName(dates.length+2)}${r-1})`});
+  l1Style(ws.addRow(t2TotVals)); r++;
+
+  ws.addRow([]); r++;
+  ws.addRow([]); r++;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TABELA 3 — PRESTADORES FIXOS
+  // ══════════════════════════════════════════════════════════════════════════
+  hdrStyle(ws.addRow(['PRESTADOR', 'TOTAL'])); r++;
+  const t3Start = r;
+  for (const p of ['PRESTADOR CENTER X','PRESTADOR CIMRAD']) {
+    dataStyle(ws.addRow([p, {formula:`SUMIF(CMM!$E:$E,"${esc(p)}",CMM!$I:$I)`}])); r++;
+  }
+  l1Style(ws.addRow(['TOTAL', {formula:`SUM(B${t3Start}:B${r-1})`}])); r++;
+
+  ws.addRow([]); r++;
+  ws.addRow([]); r++;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TABELA 4 — TOTAL POR CAT. FATURAMENTO
+  // ══════════════════════════════════════════════════════════════════════════
+  hdrStyle(ws.addRow(['CAT. FATURAMENTO', 'TOTAL'])); r++;
+  const t4Start = r;
+  for (const cat of cats) {
+    dataStyle(ws.addRow([cat, {formula:`SUMIF(CMM!$B:$B,"${esc(cat)}",CMM!$I:$I)`}])); r++;
+  }
+  l1Style(ws.addRow(['TOTAL GERAL', {formula:`SUM(B${t4Start}:B${r-1})`}])); r++;
+
+  ws.views = [{showGridLines:false}];
 }
 
 
@@ -1186,7 +1176,7 @@ async function gerarExcel() {
 
     buildListas(wb);
     buildApuracao(wb);
-    if (S.erp.length) buildERP(wb);
+    if (S.erp.length) { buildCMM(wb); buildCMMResumo(wb); }
     buildResumo(wb);
     buildConferencia(wb);
 
@@ -1653,7 +1643,7 @@ function renderTabela() {
 
 function renderERP() {
   const erp = S.erp;
-  document.getElementById('erp-count').textContent = `${erp.length.toLocaleString('pt-BR')} registros ERP`;
+  document.getElementById('erp-count').textContent = `${erp.length.toLocaleString('pt-BR')} registros CMM`;
   const contas = [...new Set(erp.map(r=>r.conta_bancaria))];
   const grid = document.getElementById('erp-grid');
   grid.innerHTML = '';
@@ -1687,7 +1677,7 @@ function renderERP() {
   }
 
   const btn = document.getElementById('erp-more');
-  if (erp.length > erpPag) { btn.style.display=''; btn.textContent=`Ver mais ERP (${erp.length-erpPag} restantes)…`; }
+  if (erp.length > erpPag) { btn.style.display=''; btn.textContent=`Ver mais CMM (${erp.length-erpPag} restantes)…`; }
   else btn.style.display='none';
 }
 
@@ -1710,7 +1700,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (hasXLS && hasEXL) { badge.textContent='✓ Libs ok'; badge.className='lib-badge ok'; }
   else if (!hasXLS)     { badge.textContent='⚠ SheetJS offline'; badge.className='lib-badge err'; document.getElementById('btn-proc').disabled=true; }
   else                  { badge.textContent='⚠ ExcelJS offline'; badge.className='lib-badge err'; }
-  loadCats();
+  renderCats();
 });
 </script>
 </body>

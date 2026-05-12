@@ -648,7 +648,12 @@ const DEFAULT_CATS = [
   {ref:'3.3',  custo:'VARIAVEL',disc:'OUTROS PROFISSIONAIS AVULSOS',       cat:'DIVIDENDOS'},
   // FINANCEIRO
   {ref:'9.1',  custo:'VARIAVEL',disc:'TRANSFERENCIA ENTRE CONTAS',         cat:'FINANCEIRO'},
-  {ref:'9.2',  custo:'VARIAVEL',disc:'PAGAMENTOS CREDITADOS',              cat:'FINANCEIRO'},
+  {ref:'9.2',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO PIX',            cat:'FINANCEIRO'},
+  {ref:'9.3',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO BOLETO',         cat:'FINANCEIRO'},
+  {ref:'9.4',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO CREDITO',        cat:'FINANCEIRO'},
+  {ref:'9.5',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO DEBITO',         cat:'FINANCEIRO'},
+  {ref:'9.6',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO QR CODE',        cat:'FINANCEIRO'},
+  {ref:'9.7',  custo:'VARIAVEL',disc:'PAGAMENTO CREDITADO DINHEIRO',       cat:'FINANCEIRO'},
   // SALDO ANTERIOR
   {ref:'10.1', custo:'VARIAVEL',disc:'SALDO ANTERIOR',                     cat:'SALDO ANTERIOR'},
 ];
@@ -1342,11 +1347,11 @@ function condSant(hist) {
   const h = (hist||'').toLowerCase();
   if (h.includes('pix')) return 'PIX';
   if (h.includes('getnet') || h.includes('cartao') || h.includes('antecipacao') || h.includes('debito')) return 'CARTÃO';
-  if (h.includes('boleto') || h.includes('tar liq') || h.includes('qrcode')) return 'BOLETO';
+  if (h.includes('boleto') || h.includes('tar liq') || h.includes('qrcode') || h.includes('cr cob')) return 'BOLETO';
   if (h.includes('tarifa') || h.includes('tar ')) return 'TARIFA';
   if (h.includes('ted') || h.includes('doc')) return 'TED/DOC';
   if (h.includes('darf')) return 'DARF';
-  if (h.includes('cr cob') || h.includes('recebimento')) return 'COBRANÇA';
+  if (h.includes('recebimento')) return 'COBRANÇA';
   return 'OUTROS';
 }
 

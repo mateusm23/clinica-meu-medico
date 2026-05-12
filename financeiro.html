@@ -198,20 +198,6 @@
     .merge-slot{max-width:320px}
     .merge-stats-inline{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 16px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:var(--rsm);font-size:13px;font-weight:600;color:#5B21B6}
     .merge-restored-alert{padding:10px 16px;border-radius:var(--rsm);background:#F5F3FF;border-left:3px solid #7C3AED;font-size:13px;font-weight:500;color:#5B21B6;margin-bottom:12px}
-    /* ── CONFERÊNCIA ── */
-    .conf-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--rsm);font-size:13px;font-weight:600;margin-bottom:12px}
-    .conf-ok{background:#DCFCE7;color:#166534;border:1px solid #BBF7D0}
-    .conf-warn{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA}
-    .conf-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-    .conf-tbl thead th{background:var(--g900);color:rgba(255,255,255,.85);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;white-space:nowrap;text-align:right}
-    .conf-tbl thead th:first-child{text-align:left}
-    .conf-tbl tbody tr{border-bottom:1px solid var(--gray100);transition:background .1s}
-    .conf-tbl tbody tr:hover{background:var(--g50)}
-    .conf-tbl td{padding:8px 12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--gray700)}
-    .conf-tbl td:first-child{text-align:left;font-weight:600;color:var(--gray900)}
-    .c-ok{color:#166534;font-weight:700}
-    .c-err{color:#991B1B;font-weight:700}
-    .c-err-row td{background:#FFF5F5!important}
   </style>
 </head>
 <body>
@@ -535,26 +521,6 @@
         </div>
       </div>
       <button class="btn-more" id="erp-more" onclick="verMaisErp()" style="display:none"></button>
-    </div>
-
-    <div id="conf-sec" style="display:none">
-      <div class="sec-lbl" style="margin-top:28px">Conferência de Saldos</div>
-      <div id="conf-badge-div"></div>
-      <div class="tbl-wrap">
-        <div class="tbl-scroll">
-          <table class="conf-tbl">
-            <thead>
-              <tr>
-                <th style="text-align:left">BANCO</th>
-                <th>SALDO INICIAL</th><th>ENTRADAS</th><th>SAÍDAS</th>
-                <th>SALDO ESPERADO</th><th>SALDO FINAL</th>
-                <th>DIVERGÊNCIA</th><th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="conf-tbody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <button class="btn-gerar" id="btn-gerar" onclick="gerarExcel()">
@@ -1090,25 +1056,6 @@ function buildResumo(wb) {
   });
 }
 
-// ── FASE 5 — CONFERÊNCIA ──────────────────────────────────────────────────────
-
-function _calcConferencia() {
-  return [...new Set(S.lanc.map(r=>r.banco))].map(banco => {
-    const rows  = S.lanc.filter(r=>r.banco===banco);
-    const withS = rows.filter(r=>r.saldo!=null&&!isNaN(r.saldo)).sort((a,b)=>a.data-b.data);
-    if (!withS.length) return {banco, noSaldo:true};
-    const sorted = [...rows].sort((a,b)=>a.data-b.data);
-    const last   = withS[withS.length-1];
-    const saldoF = last.saldo;
-    const totE   = sorted.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
-    const totS   = sorted.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
-    const saldoI = saldoF - (totE - totS);
-    const saldoE = saldoI+totE-totS;
-    const div    = saldoF-saldoE;
-    const ok     = Math.abs(div)<0.05;
-    return {banco, saldoI, totE, totS, saldoE, saldoF, div, ok};
-  });
-}
 
 function buildConferencia(wb) {
   const ws = wb.addWorksheet('CONFERÊNCIA');
@@ -1219,37 +1166,6 @@ function buildConferencia(wb) {
   ws.views = [{state:'frozen', ySplit:3}];
 }
 
-function renderConferencia() {
-  const conf = _calcConferencia();
-  const tbody = document.getElementById('conf-tbody');
-  tbody.innerHTML = '';
-  let allOk = true;
-
-  conf.forEach(c => {
-    const tr = document.createElement('tr');
-    if (c.noSaldo) {
-      tr.innerHTML = `<td>${c.banco}</td><td colspan="6" style="text-align:center;color:var(--gray500);font-size:11px">saldo não disponível no extrato</td><td></td>`;
-      tbody.appendChild(tr);
-      return;
-    }
-    if (!c.ok) { allOk = false; tr.className = 'c-err-row'; }
-    tr.innerHTML = `
-      <td>${c.banco}</td>
-      <td>${fmtBRL(c.saldoI)}</td>
-      <td class="val-e">${fmtBRL(c.totE)}</td>
-      <td class="val-s">${fmtBRL(c.totS)}</td>
-      <td>${fmtBRL(c.saldoE)}</td>
-      <td>${fmtBRL(c.saldoF)}</td>
-      <td class="${c.ok?'c-ok':'c-err'}">${c.ok?'R$ 0,00':fmtBRL(c.div)}</td>
-      <td class="${c.ok?'c-ok':'c-err'}" style="text-align:center">${c.ok?'OK ✓':'DIVERGÊNCIA ⚠'}</td>`;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('conf-badge-div').innerHTML = allOk
-    ? '<div class="conf-badge conf-ok">✓ Todos os saldos conferem</div>'
-    : '<div class="conf-badge conf-warn">⚠ Divergências encontradas — verifique os extratos</div>';
-  document.getElementById('conf-sec').style.display = '';
-}
 
 async function gerarExcel() {
   if (!S.lanc.length) { alert('Processe os arquivos primeiro.'); return; }
@@ -1683,8 +1599,6 @@ function mostrar() {
 
   if (S.erp.length) { document.getElementById('erp-sec').style.display=''; renderERP(); }
   else document.getElementById('erp-sec').style.display='none';
-
-  renderConferencia();
 
   const mergeDiv = document.getElementById('merge-stats-div');
   if (S.mergeRestored > 0) {

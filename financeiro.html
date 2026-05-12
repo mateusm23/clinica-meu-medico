@@ -1098,12 +1098,11 @@ function _calcConferencia() {
     const withS = rows.filter(r=>r.saldo!=null&&!isNaN(r.saldo)).sort((a,b)=>a.data-b.data);
     if (!withS.length) return {banco, noSaldo:true};
     const sorted = [...rows].sort((a,b)=>a.data-b.data);
-    const first  = withS[0];
     const last   = withS[withS.length-1];
-    const saldoI = first.tipo==='Entrada' ? first.saldo-first.valor : first.saldo+first.valor;
     const saldoF = last.saldo;
     const totE   = sorted.filter(r=>r.tipo==='Entrada').reduce((s,r)=>s+r.valor,0);
     const totS   = sorted.filter(r=>r.tipo==='Saída').reduce((s,r)=>s+r.valor,0);
+    const saldoI = saldoF - (totE - totS);
     const saldoE = saldoI+totE-totS;
     const div    = saldoF-saldoE;
     const ok     = Math.abs(div)<0.05;
